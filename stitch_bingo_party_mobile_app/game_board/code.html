@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><title>Live Match - Bingo Party</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "inverse-surface": "#283044", "on-secondary": "#ffffff", "on-error-container": "#93000a", "error-container": "#ffdad6", "on-error": "#ffffff", "inverse-on-surface": "#eef0ff", "primary-fixed": "#e3dfff", "on-primary-container": "#ece8ff", "surface-bright": "#faf8ff", "surface-container-high": "#e2e7ff", "surface": "#faf8ff", "on-surface": "#131b2e", "on-primary-fixed-variant": "#351bd2", "secondary-container": "#6cf8bb", "background": "#faf8ff", "on-tertiary-fixed-variant": "#793000", "secondary-fixed-dim": "#4edea3", "tertiary": "#8a3800", "surface-container-low": "#f2f3ff", "primary-fixed-dim": "#c4c0ff", "secondary-fixed": "#6ffbbe", "primary-container": "#5b4ef5", "inverse-primary": "#c4c0ff", "on-tertiary-container": "#ffe5da", "outline-variant": "#c7c4d8", "secondary": "#006c49", "surface-container": "#eaedff", "tertiary-container": "#b14a00", "on-primary": "#ffffff", "on-surface-variant": "#464556", "on-primary-fixed": "#110068", "surface-container-highest": "#dae2fd", "tertiary-fixed-dim": "#ffb692", "surface-dim": "#d2d9f4", "on-tertiary": "#ffffff", "surface-variant": "#dae2fd", "surface-tint": "#4f40e9", "surface-container-lowest": "#ffffff", "primary": "#412edc", "tertiary-fixed": "#ffdbcb", "on-secondary-fixed-variant": "#005236", "error": "#ba1a1a", "on-background": "#131b2e", "on-tertiary-fixed": "#341100", "on-secondary-fixed": "#002113", "outline": "#777587", "on-secondary-container": "#00714d" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-lg": "1rem", "space-xs": "0.25rem", "space-sm": "0.5rem", "margin": "1rem", "space-md": "0.75rem", "space-xl": "1.5rem", "gutter": "0.5rem" }, "fontFamily": { "body-md": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "tile-header": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "display-hero": ["Plus Jakarta Sans"], "display-hero-mobile": ["Plus Jakarta Sans"], "tile-number": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"], "label-sm": ["Plus Jakarta Sans"] }, "fontSize": { "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "500" }], "headline-lg": ["24px", { "lineHeight": "30px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "headline-md": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "tile-header": ["16px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "800" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "500" }], "display-hero": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }], "display-hero-mobile": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "800" }], "tile-number": ["22px", { "lineHeight": "22px", "letterSpacing": "0em", "fontWeight": "800" }], "label-md": ["13px", { "lineHeight": "16px", "fontWeight": "600" }], "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "700" }] } } } }</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-margin flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-xs"><button aria-label="Leave or go back" class="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors" onclick="history.back()"><span class="material-symbols-outlined text-[20px]">arrow_back</span></button><div class="flex flex-col"><h1 class="font-headline-md text-headline-md text-on-surface leading-tight">Live Match</h1><div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-secondary inline-block animate-pulse"></span><span class="font-label-sm text-label-sm text-on-surface-variant">Local LAN • Connected</span></div></div></div><div class="flex items-center gap-space-xs"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-safe bg-surface min-h-screen"><div class="flex flex-col w-full pb-8">
+<div class="px-margin flex flex-col gap-space-sm pt-2">
+<!-- Turn Indicator Banner -->
+<div class="w-full bg-primary-container text-on-primary rounded-xl px-space-md py-space-sm flex items-center justify-between shadow-md">
+<div class="flex items-center gap-space-xs min-w-0">
+<span class="material-symbols-outlined text-[20px] shrink-0" style="font-variation-settings: 'FILL' 1;">campaign</span>
+<span class="font-label-md text-label-md truncate">Your turn to call a number!</span>
+</div>
+<div class="flex items-center gap-1 bg-surface-container-lowest/20 rounded-full px-2 py-0.5 shrink-0">
+<span class="material-symbols-outlined text-[14px]">timer</span>
+<span class="font-label-sm text-label-sm font-bold tracking-tight">15s</span>
+</div>
+</div>
+<!-- Match Stats & Room Info Strip -->
+<div class="w-full bg-surface-container-lowest rounded-xl p-space-sm shadow-sm flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Lines completed: 2/5</span>
+<div class="flex items-center gap-1 mt-1">
+<div class="w-3.5 h-3.5 rounded-full bg-secondary text-on-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-[10px]">check</span>
+</div>
+<div class="w-3.5 h-3.5 rounded-full bg-secondary text-on-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-[10px]">check</span>
+</div>
+<div class="w-3.5 h-3.5 rounded-full bg-surface-container-high"></div>
+<div class="w-3.5 h-3.5 rounded-full bg-surface-container-high"></div>
+<div class="w-3.5 h-3.5 rounded-full bg-surface-container-high"></div>
+</div>
+</div>
+<div class="flex items-center gap-space-xs">
+<div class="bg-surface-container-low px-2.5 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-on-surface-variant text-[14px]">tag</span>
+<span class="font-label-md text-label-md text-on-surface font-bold tracking-wider">7K4P</span>
+</div>
+<div class="bg-secondary-container text-on-secondary-container px-2.5 py-1 rounded-full font-label-sm text-label-sm font-bold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary inline-block"></span>
+          4 Players
+        </div>
+</div>
+</div>
+<!-- Called Numbers Ribbon -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between px-0.5">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Numbers called so far (8)</span>
+<span class="font-label-sm text-label-sm text-primary font-bold">Chronological</span>
+</div>
+<div class="w-full overflow-x-auto py-1 flex items-center gap-1.5 no-scrollbar">
+<!-- Latest Called Pill -->
+<div class="shrink-0 bg-primary-container text-on-primary rounded-xl px-2.5 py-1 flex items-center gap-1 shadow-sm">
+<span class="font-tile-number text-label-md leading-none">14</span>
+<span class="font-label-sm text-[10px] uppercase font-bold tracking-wider bg-surface-container-lowest/25 px-1 py-0.2 rounded">Latest</span>
+</div>
+<!-- Previously Called -->
+<div class="shrink-0 bg-surface-container-lowest text-on-surface rounded-xl px-2.5 py-1 flex items-center justify-center shadow-sm">
+<span class="font-label-md text-label-md font-bold">7</span>
+</div>
+<div class="shrink-0 bg-surface-container-lowest text-on-surface rounded-xl px-2.5 py-1 flex items-center justify-center shadow-sm">
+<span class="font-label-md text-label-md font-bold">22</span>
+</div>
+<div class="shrink-0 bg-surface-container-lowest text-on-surface rounded-xl px-2.5 py-1 flex items-center justify-center shadow-sm">
+<span class="font-label-md text-label-md font-bold">3</span>
+</div>
+<div class="shrink-0 bg-surface-container-lowest text-on-surface rounded-xl px-2.5 py-1 flex items-center justify-center shadow-sm">
+<span class="font-label-md text-label-md font-bold">19</span>
+</div>
+<div class="shrink-0 bg-surface-container-lowest text-on-surface rounded-xl px-2.5 py-1 flex items-center justify-center shadow-sm">
+<span class="font-label-md text-label-md font-bold">11</span>
+</div>
+<div class="shrink-0 bg-surface-container-lowest text-on-surface rounded-xl px-2.5 py-1 flex items-center justify-center shadow-sm">
+<span class="font-label-md text-label-md font-bold">8</span>
+</div>
+<div class="shrink-0 bg-surface-container-lowest text-on-surface rounded-xl px-2.5 py-1 flex items-center justify-center shadow-sm">
+<span class="font-label-md text-label-md font-bold">25</span>
+</div>
+</div>
+</div>
+<!-- Active 5x5 Bingo Board -->
+<div class="w-full bg-surface-container-low p-2 rounded-xl shadow-sm flex flex-col gap-1.5">
+<!-- Grid Column Labels B-I-N-G-O -->
+<div class="grid grid-cols-5 gap-gutter text-center">
+<div class="font-tile-header text-tile-header text-primary font-bold">B</div>
+<div class="font-tile-header text-tile-header text-primary font-bold">I</div>
+<div class="font-tile-header text-tile-header text-primary font-bold">N</div>
+<div class="font-tile-header text-tile-header text-primary font-bold">G</div>
+<div class="font-tile-header text-tile-header text-primary font-bold">O</div>
+</div>
+<!-- Board Cells: 5x5 -->
+<div class="grid grid-cols-5 gap-gutter w-full">
+<!-- Row 1: Line completed in Green -->
+<button class="aspect-square bg-secondary text-on-secondary rounded-lg flex flex-col items-center justify-center shadow-sm relative active:scale-95 transition-transform" type="button">
+<span class="font-tile-number text-tile-number leading-none">3</span>
+<span class="material-symbols-outlined text-[12px] absolute top-1 right-1" style="font-variation-settings: 'FILL' 1;">star</span>
+</button>
+<button class="aspect-square bg-secondary text-on-secondary rounded-lg flex flex-col items-center justify-center shadow-sm relative active:scale-95 transition-transform" type="button">
+<span class="font-tile-number text-tile-number leading-none">7</span>
+<span class="material-symbols-outlined text-[12px] absolute top-1 right-1" style="font-variation-settings: 'FILL' 1;">star</span>
+</button>
+<button class="aspect-square bg-secondary text-on-secondary rounded-lg flex flex-col items-center justify-center shadow-sm relative active:scale-95 transition-transform" type="button">
+<span class="font-tile-number text-tile-number leading-none">14</span>
+<span class="material-symbols-outlined text-[12px] absolute top-1 right-1" style="font-variation-settings: 'FILL' 1;">star</span>
+</button>
+<button class="aspect-square bg-secondary text-on-secondary rounded-lg flex flex-col items-center justify-center shadow-sm relative active:scale-95 transition-transform" type="button">
+<span class="font-tile-number text-tile-number leading-none">19</span>
+<span class="material-symbols-outlined text-[12px] absolute top-1 right-1" style="font-variation-settings: 'FILL' 1;">star</span>
+</button>
+<button class="aspect-square bg-secondary text-on-secondary rounded-lg flex flex-col items-center justify-center shadow-sm relative active:scale-95 transition-transform" type="button">
+<span class="font-tile-number text-tile-number leading-none">25</span>
+<span class="material-symbols-outlined text-[12px] absolute top-1 right-1" style="font-variation-settings: 'FILL' 1;">star</span>
+</button>
+<!-- Row 2 -->
+<button class="aspect-square bg-secondary text-on-secondary rounded-lg flex flex-col items-center justify-center shadow-sm relative active:scale-95 transition-transform" type="button">
+<span class="font-tile-number text-tile-number leading-none">8</span>
+<span class="material-symbols-outlined text-[12px] absolute top-1 right-1" style="font-variation-settings: 'FILL' 1;">star</span>
+</button>
+<button class="aspect-square bg-surface-container-lowest text-on-surface rounded-lg flex flex-col items-center justify-center shadow-sm active:scale-95 transition-transform" type="button">
+<span class="font-tile-number text-tile-number leading-none">2</span>
+</button>
+<button class="aspect-square bg-primary-container text-on-primary rounded-lg flex flex-col items-center justify-center shadow-sm relative active:scale-95 transition-transform" type="button">
+<span class="font-tile-number text-tile-number leading-none">11</span>
+<span class="material-symbols-outlined text-[12px] absolute top-1 right-1">check</span>
+</button>
+<button class="aspect-square bg-surface-container-lowest text-on-surface rounded-lg flex flex-col items-center justify-center shadow-sm active:scale-95 transition-transform" type="button">
+<span class="font-tile-number text-tile-number leading-none">16</span>
+</button>
+<button class="aspect-square bg-surface-container-lowest text-on-surface rounded-lg flex flex-col items-center justify-center shadow-sm active:scale-95 transition-transform" type="button">
+<span class="font-tile-number text-tile-number leading-none">23</span>
+</button>
+<!-- Row 3 (Center is Marked FREE space) -->
+<button class="aspect-square bg-secondary text-on-secondary rounded-lg flex flex-col items-center justify-center shadow-sm relative active:scale-95 transition-transform" type="button">
+<span class="font-tile-number text-tile-number leading-none">1</span>
+<span class="material-symbols-outlined text-[12px] absolute top-1 right-1" style="font-variation-settings: 'FILL' 1;">star</span>
+</button>
+<button class="aspect-square bg-surface-container-lowest text-on-surface rounded-lg flex flex-col items-center justify-center shadow-sm active:scale-95 transition-transform" type="button">
+<span class="font-tile-number text-tile-number leading-none">6</span>
+</button>
+<button class="aspect-square bg-secondary text-on-secondary rounded-lg flex flex-col items-center justify-center shadow-sm relative active:scale-95 transition-transform" type="button">
+<span class="font-label-sm text-[10px] font-extrabold uppercase tracking-wide">FREE</span>
+<span class="material-symbols-outlined text-[12px] absolute top-1 right-1" style="font-variation-settings: 'FILL' 1;">star</span>
+</button>
+<button class="aspect-square bg-surface-container-lowest text-on-surface rounded-lg flex flex-col items-center justify-center shadow-sm active:scale-95 transition-transform" type="button">
+<span class="font-tile-number text-tile-number leading-none">18</span>
+</button>
+<button class="aspect-square bg-surface-container-lowest text-on-surface rounded-lg flex flex-col items-center justify-center shadow-sm active:scale-95 transition-transform" type="button">
+<span class="font-tile-number text-tile-number leading-none">21</span>
+</button>
+<!-- Row 4 -->
+<button class="aspect-square bg-secondary text-on-secondary rounded-lg flex flex-col items-center justify-center shadow-sm relative active:scale-95 transition-transform" type="button">
+<span class="font-tile-number text-tile-number leading-none">5</span>
+<span class="material-symbols-outlined text-[12px] absolute top-1 right-1" style="font-variation-settings: 'FILL' 1;">star</span>
+</button>
+<button class="aspect-square bg-surface-container-lowest text-on-surface rounded-lg flex flex-col items-center justify-center shadow-sm active:scale-95 transition-transform" type="button">
+<span class="font-tile-number text-tile-number leading-none">10</span>
+</button>
+<button class="aspect-square bg-surface-container-lowest text-on-surface rounded-lg flex flex-col items-center justify-center shadow-sm active:scale-95 transition-transform" type="button">
+<span class="font-tile-number text-tile-number leading-none">13</span>
+</button>
+<button class="aspect-square bg-surface-container-lowest text-on-surface rounded-lg flex flex-col items-center justify-center shadow-sm active:scale-95 transition-transform" type="button">
+<span class="font-tile-number text-tile-number leading-none">17</span>
+</button>
+<button class="aspect-square bg-primary-container text-on-primary rounded-lg flex flex-col items-center justify-center shadow-sm relative active:scale-95 transition-transform" type="button">
+<span class="font-tile-number text-tile-number leading-none">22</span>
+<span class="material-symbols-outlined text-[12px] absolute top-1 right-1">check</span>
+</button>
+<!-- Row 5 -->
+<button class="aspect-square bg-secondary text-on-secondary rounded-lg flex flex-col items-center justify-center shadow-sm relative active:scale-95 transition-transform" type="button">
+<span class="font-tile-number text-tile-number leading-none">4</span>
+<span class="material-symbols-outlined text-[12px] absolute top-1 right-1" style="font-variation-settings: 'FILL' 1;">star</span>
+</button>
+<button class="aspect-square bg-surface-container-lowest text-on-surface rounded-lg flex flex-col items-center justify-center shadow-sm active:scale-95 transition-transform" type="button">
+<span class="font-tile-number text-tile-number leading-none">9</span>
+</button>
+<button class="aspect-square bg-surface-container-lowest text-on-surface rounded-lg flex flex-col items-center justify-center shadow-sm active:scale-95 transition-transform" type="button">
+<span class="font-tile-number text-tile-number leading-none">12</span>
+</button>
+<button class="aspect-square bg-surface-container-lowest text-on-surface rounded-lg flex flex-col items-center justify-center shadow-sm active:scale-95 transition-transform" type="button">
+<span class="font-tile-number text-tile-number leading-none">15</span>
+</button>
+<button class="aspect-square bg-surface-container-lowest text-on-surface rounded-lg flex flex-col items-center justify-center shadow-sm active:scale-95 transition-transform" type="button">
+<span class="font-tile-number text-tile-number leading-none">20</span>
+</button>
+</div>
+</div>
+<!-- Active Caller Section -->
+<div class="w-full bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm mt-1">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<div class="w-2.5 h-2.5 rounded-full bg-primary animate-ping"></div>
+<span class="font-headline-md text-headline-md text-on-surface leading-none">Call Next Number</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-bold">Pick 1 to 25</span>
+</div>
+<!-- 1-25 Picker Grid -->
+<div class="grid grid-cols-5 gap-1.5 w-full" id="picker-grid">
+<!-- 1: Called -->
+<div class="h-10 rounded-lg bg-surface-container-high text-outline flex items-center justify-center font-tile-number text-body-lg line-through opacity-60 cursor-not-allowed">1</div>
+<!-- 2: Available -->
+<button class="picker-btn h-10 rounded-lg bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container flex items-center justify-center font-tile-number text-body-lg active:scale-95 transition-all" onclick="selectBall(this, 2)" type="button">2</button>
+<!-- 3: Called -->
+<div class="h-10 rounded-lg bg-surface-container-high text-outline flex items-center justify-center font-tile-number text-body-lg line-through opacity-60 cursor-not-allowed">3</div>
+<!-- 4: Called -->
+<div class="h-10 rounded-lg bg-surface-container-high text-outline flex items-center justify-center font-tile-number text-body-lg line-through opacity-60 cursor-not-allowed">4</div>
+<!-- 5: Called -->
+<div class="h-10 rounded-lg bg-surface-container-high text-outline flex items-center justify-center font-tile-number text-body-lg line-through opacity-60 cursor-not-allowed">5</div>
+<!-- 6: Available -->
+<button class="picker-btn h-10 rounded-lg bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container flex items-center justify-center font-tile-number text-body-lg active:scale-95 transition-all" onclick="selectBall(this, 6)" type="button">6</button>
+<!-- 7: Called -->
+<div class="h-10 rounded-lg bg-surface-container-high text-outline flex items-center justify-center font-tile-number text-body-lg line-through opacity-60 cursor-not-allowed">7</div>
+<!-- 8: Called -->
+<div class="h-10 rounded-lg bg-surface-container-high text-outline flex items-center justify-center font-tile-number text-body-lg line-through opacity-60 cursor-not-allowed">8</div>
+<!-- 9: Available -->
+<button class="picker-btn h-10 rounded-lg bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container flex items-center justify-center font-tile-number text-body-lg active:scale-95 transition-all" onclick="selectBall(this, 9)" type="button">9</button>
+<!-- 10: Available -->
+<button class="picker-btn h-10 rounded-lg bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container flex items-center justify-center font-tile-number text-body-lg active:scale-95 transition-all" onclick="selectBall(this, 10)" type="button">10</button>
+<!-- 11: Called -->
+<div class="h-10 rounded-lg bg-surface-container-high text-outline flex items-center justify-center font-tile-number text-body-lg line-through opacity-60 cursor-not-allowed">11</div>
+<!-- 12: Available -->
+<button class="picker-btn h-10 rounded-lg bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container flex items-center justify-center font-tile-number text-body-lg active:scale-95 transition-all" onclick="selectBall(this, 12)" type="button">12</button>
+<!-- 13: Available -->
+<button class="picker-btn h-10 rounded-lg bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container flex items-center justify-center font-tile-number text-body-lg active:scale-95 transition-all" onclick="selectBall(this, 13)" type="button">13</button>
+<!-- 14: Called -->
+<div class="h-10 rounded-lg bg-surface-container-high text-outline flex items-center justify-center font-tile-number text-body-lg line-through opacity-60 cursor-not-allowed">14</div>
+<!-- 15: Available -->
+<button class="picker-btn h-10 rounded-lg bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container flex items-center justify-center font-tile-number text-body-lg active:scale-95 transition-all" onclick="selectBall(this, 15)" type="button">15</button>
+<!-- 16: Available -->
+<button class="picker-btn h-10 rounded-lg bg-primary-container text-on-primary shadow-sm flex items-center justify-center font-tile-number text-body-lg active:scale-95 transition-all" onclick="selectBall(this, 16)" type="button">16</button>
+<!-- 17: Available -->
+<button class="picker-btn h-10 rounded-lg bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container flex items-center justify-center font-tile-number text-body-lg active:scale-95 transition-all" onclick="selectBall(this, 17)" type="button">17</button>
+<!-- 18: Available -->
+<button class="picker-btn h-10 rounded-lg bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container flex items-center justify-center font-tile-number text-body-lg active:scale-95 transition-all" onclick="selectBall(this, 18)" type="button">18</button>
+<!-- 19: Called -->
+<div class="h-10 rounded-lg bg-surface-container-high text-outline flex items-center justify-center font-tile-number text-body-lg line-through opacity-60 cursor-not-allowed">19</div>
+<!-- 20: Available -->
+<button class="picker-btn h-10 rounded-lg bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container flex items-center justify-center font-tile-number text-body-lg active:scale-95 transition-all" onclick="selectBall(this, 20)" type="button">20</button>
+<!-- 21: Available -->
+<button class="picker-btn h-10 rounded-lg bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container flex items-center justify-center font-tile-number text-body-lg active:scale-95 transition-all" onclick="selectBall(this, 21)" type="button">21</button>
+<!-- 22: Called -->
+<div class="h-10 rounded-lg bg-surface-container-high text-outline flex items-center justify-center font-tile-number text-body-lg line-through opacity-60 cursor-not-allowed">22</div>
+<!-- 23: Available -->
+<button class="picker-btn h-10 rounded-lg bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container flex items-center justify-center font-tile-number text-body-lg active:scale-95 transition-all" onclick="selectBall(this, 23)" type="button">23</button>
+<!-- 24: Available -->
+<button class="picker-btn h-10 rounded-lg bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container flex items-center justify-center font-tile-number text-body-lg active:scale-95 transition-all" onclick="selectBall(this, 24)" type="button">24</button>
+<!-- 25: Called -->
+<div class="h-10 rounded-lg bg-surface-container-high text-outline flex items-center justify-center font-tile-number text-body-lg line-through opacity-60 cursor-not-allowed">25</div>
+</div>
+<!-- Action Button -->
+<button class="w-full h-12 bg-primary text-on-primary rounded-xl font-headline-md text-body-lg font-bold flex items-center justify-center gap-2 shadow-md active:translate-y-0.5 transition-all" id="call-btn" type="button">
+<span class="material-symbols-outlined text-[20px]">record_voice_over</span>
+<span>Call Selected Number (<span id="selected-number-display">16</span>)</span>
+</button>
+</div>
+</div>
+</div>
+<script>
+  let selectedVal = 16;
+  function selectBall(btn, num) {
+    document.querySelectorAll('.picker-btn').forEach(b => {
+      b.classList.remove('bg-primary-container', 'text-on-primary');
+      b.classList.add('bg-surface-container-lowest', 'text-on-surface');
+    });
+    btn.classList.remove('bg-surface-container-lowest', 'text-on-surface');
+    btn.classList.add('bg-primary-container', 'text-on-primary');
+    selectedVal = num;
+    document.getElementById('selected-number-display').innerText = num;
+  }
+</script></main></body></html>

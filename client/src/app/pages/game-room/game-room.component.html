@@ -1,0 +1,191 @@
+<div class="screen">
+  <div style="display: flex; align-items: center; justify-content: space-between;">
+    <div>
+      <p class="label-sm">Room</p>
+      <div class="headline-lg" style="color: var(--primary);">{{ roomCode }}</div>
+    </div>
+    <kendo-chip [label]="(state()?.players?.length ?? 0) + ' players'" [rounded]="'full'" size="small"></kendo-chip>
+  </div>
+
+  @if (errorMessage()) {
+  <p class="error-text">{{ errorMessage() }}</p>
+  }
+
+  @if (!state()) {
+  <kendo-card [width]="'100%'">
+    <kendo-card-body style="display: flex; align-items: center; gap: 10px; justify-content: center; padding: 2rem 0;">
+      <kendo-loader size="medium" type="infinite-spinner"></kendo-loader>
+      <span>Connecting…</span>
+    </kendo-card-body>
+  </kendo-card>
+  }
+
+  <!-- SETUP PHASE -->
+  @if (state()?.status === 'setup') {
+  <kendo-card [width]="'100%'">
+    <kendo-card-body style="display: flex; flex-direction: column; gap: 4px;">
+      <div class="headline-md" style="margin-bottom: 6px;">Players</div>
+      @for (p of state()!.players; track p.userId) {
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <kendo-avatar
+            shape="circle"
+            size="small"
+            [style.background]="p.role === 'admin' ? 'var(--primary)' : 'var(--surface-container-high)'"
+            [style.color]="p.role === 'admin' ? 'var(--on-primary)' : 'var(--on-surface)'"
+            style="font-weight: 700; font-size: 12px;"
+          >
+            {{ initialsOf(p.displayName) }}
+          </kendo-avatar>
+          <span>{{ p.displayName }}</span>
+          @if (p.role === 'admin') {
+          <kendo-chip label="admin" size="small" [rounded]="'full'" [themeColor]="'info'" [fillMode]="'outline'"></kendo-chip>
+          }
+        </div>
+        <kendo-chip
+          [label]="p.ready ? 'Ready' : 'Arranging…'"
+          size="small"
+          [rounded]="'full'"
+          [themeColor]="p.ready ? 'success' : 'base'"
+        ></kendo-chip>
+      </div>
+      }
+    </kendo-card-body>
+  </kendo-card>
+
+  @if (!me()?.ready) {
+  <app-board-setup [readyCount]="readyCount()" [totalPlayers]="state()!.players.length" (ready)="submitReady($event)" />
+  } @else {
+  <kendo-card [width]="'100%'">
+    <kendo-card-body style="text-align: center;">
+      <div class="headline-md">You're ready</div>
+      <p style="color: var(--on-surface-variant);">Waiting for everyone else…</p>
+    </kendo-card-body>
+  </kendo-card>
+  }
+
+  @if (isAdmin()) {
+  <button kendoButton themeColor="primary" [rounded]="'large'" size="large" [disabled]="!allReady() || busy()" (click)="startGame()">
+    {{ allReady() ? 'Start game' : 'Waiting for all players to be ready' }}
+  </button>
+  }
+  }
+
+  <!-- IN PROGRESS -->
+  @if (state()?.status === 'in_progress') {
+  <kendo-card
+    [width]="'100%'"
+    [style.background]="isMyTurn() ? 'var(--primary-container)' : 'var(--surface-container-lowest)'"
+    [style.color]="isMyTurn() ? 'var(--on-primary)' : 'var(--on-surface)'"
+  >
+    <kendo-card-body>
+      @if (isMyTurn()) {
+      <div class="headline-md">Your turn to call a number!</div>
+      } @else {
+      <div class="headline-md">Waiting on {{ currentTurnPlayer()?.displayName }}</div>
+      }
+    </kendo-card-body>
+  </kendo-card>
+
+  <kendo-card [width]="'100%'">
+    <kendo-card-body style="display: flex; flex-direction: column; gap: 12px;">
+      <div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span class="label-sm">Lines completed</span>
+          <span style="font-size: 13px; font-weight: 600;">{{ me()?.linesCompleted ?? 0 }} / 5</span>
+        </div>
+        <kendo-progressbar [value]="me()?.linesCompleted ?? 0" [max]="5" [label]="{ visible: false }" [animation]="true"></kendo-progressbar>
+      </div>
+      <div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span class="label-sm">Numbers called</span>
+          <span style="font-size: 13px; font-weight: 600;">{{ state()!.calledNumbers.length }} / 25</span>
+        </div>
+        <kendo-progressbar [value]="state()!.calledNumbers.length" [max]="25" [label]="{ visible: false }" [animation]="true"></kendo-progressbar>
+      </div>
+    </kendo-card-body>
+  </kendo-card>
+
+  <kendo-card [width]="'100%'">
+    <kendo-card-body style="display: flex; flex-direction: column; gap: 8px;">
+      <p class="label-sm">Called so far</p>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+        @for (n of state()!.calledNumbers; track n) {
+        <kendo-chip [label]="n.toString()" size="small" [rounded]="'full'"></kendo-chip>
+        }
+      </div>
+    </kendo-card-body>
+  </kendo-card>
+
+  <kendo-card [width]="'100%'">
+    <kendo-card-body style="padding: 8px; background: var(--surface-container-low); border-radius: var(--radius-lg);">
+      <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;">
+        @for (n of state()!.yourLayout; track $index) {
+        <button
+          kendoButton
+          type="button"
+          [themeColor]="isMarked($index) ? 'success' : 'base'"
+          [fillMode]="isMarked($index) ? 'solid' : 'outline'"
+          style="aspect-ratio: 1; padding: 0; font-weight: 800; font-size: 18px; justify-content: center; pointer-events: none;"
+        >
+          {{ n }}
+        </button>
+        }
+      </div>
+    </kendo-card-body>
+  </kendo-card>
+
+  @if (isMyTurn()) {
+  <kendo-card [width]="'100%'">
+    <kendo-card-body style="display: flex; flex-direction: column; gap: 10px;">
+      <div class="headline-md">Call next number</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+        @for (n of availableNumbers(); track n) {
+        <kendo-chip [label]="n.toString()" [rounded]="'full'" [themeColor]="'info'" [fillMode]="'outline'" [disabled]="busy()" (contentClick)="callNumber(n)"></kendo-chip>
+        }
+      </div>
+    </kendo-card-body>
+  </kendo-card>
+  }
+
+  @if (isAdmin()) {
+  <kendo-card [width]="'100%'">
+    <kendo-card-body style="display: flex; flex-direction: column; gap: 6px;">
+      <p class="label-sm">Admin view — turn order &amp; progress</p>
+      @for (p of state()!.players; track p.userId) {
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 0;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <kendo-avatar shape="circle" size="small" style="font-size: 11px; font-weight: 700;">{{ initialsOf(p.displayName) }}</kendo-avatar>
+          <span>{{ p.displayName }}</span>
+          @if (p.userId === state()!.currentTurnUserId) {
+          <kendo-chip label="turn" size="small" [rounded]="'full'" [themeColor]="'info'"></kendo-chip>
+          }
+        </div>
+        <span class="label-sm">{{ p.linesCompleted }}/5 lines</span>
+      </div>
+      }
+    </kendo-card-body>
+  </kendo-card>
+  }
+  }
+
+  <!-- FINISHED -->
+  @if (state()?.status === 'finished') {
+  <kendo-dialog [width]="360">
+    <div style="text-align: center; display: flex; flex-direction: column; gap: 14px; padding: 8px 0;">
+      <div class="headline-lg" [style.color]="isWinnerMe() ? 'var(--secondary)' : 'var(--primary)'">
+        {{ isWinnerMe() ? 'You won bingo!' : 'Bingo!' }}
+      </div>
+      <kendo-avatar
+        shape="circle"
+        size="large"
+        style="margin: 0 auto; background: var(--secondary); color: var(--on-secondary); font-weight: 800; font-size: 22px;"
+      >
+        {{ initialsOf(winner()?.displayName ?? '?') }}
+      </kendo-avatar>
+      <p style="font-size: 18px; margin: 0;">{{ winner()?.displayName }} completed 5 lines</p>
+      <button kendoButton themeColor="primary" [rounded]="'large'" size="large" (click)="backToLobby()">Back to lobby</button>
+    </div>
+  </kendo-dialog>
+  }
+</div>

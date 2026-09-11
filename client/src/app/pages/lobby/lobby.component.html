@@ -1,0 +1,46 @@
+<div class="screen">
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <kendo-avatar shape="circle" [border]="true" style="background: var(--primary); color: var(--on-primary); font-weight: 700;">
+        {{ initials }}
+      </kendo-avatar>
+      <div>
+        <div class="headline-md">Hey, {{ auth.user?.displayName }}</div>
+        <kendo-chip [label]="auth.user?.role ?? ''" [themeColor]="auth.user?.role === 'admin' ? 'info' : 'base'" [rounded]="'full'" size="small"></kendo-chip>
+      </div>
+    </div>
+    <button kendoButton [fillMode]="'outline'" (click)="logout()">Sign out</button>
+  </div>
+
+  @if (auth.user?.role === 'admin') {
+  <kendo-card [width]="'100%'">
+    <kendo-card-body style="display: flex; flex-direction: column; gap: 10px;">
+      <div class="headline-md">Create a party</div>
+      <p style="color: var(--on-surface-variant); font-size: 14px; margin: 0;">
+        You'll get a room code to share with 2-6 other players.
+      </p>
+      <button kendoButton themeColor="primary" [rounded]="'large'" size="large" [disabled]="busy()" (click)="createParty()">
+        Create party
+      </button>
+    </kendo-card-body>
+  </kendo-card>
+  }
+
+  <kendo-card [width]="'100%'">
+    <kendo-card-body style="display: flex; flex-direction: column; gap: 10px;">
+      <div class="headline-md">Join a party</div>
+      <kendo-textbox
+        [(ngModel)]="roomCodeInput"
+        placeholder="Room code, e.g. 7K4P"
+        [maxlength]="4"
+        style="text-transform: uppercase;"
+      ></kendo-textbox>
+      @if (errorMessage()) {
+      <p class="error-text">{{ errorMessage() }}</p>
+      }
+      <button kendoButton [fillMode]="'outline'" [rounded]="'large'" size="large" [disabled]="busy()" (click)="joinParty()">
+        Join party
+      </button>
+    </kendo-card-body>
+  </kendo-card>
+</div>

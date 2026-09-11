@@ -1,0 +1,61 @@
+<div style="display: flex; flex-direction: column; gap: 0.75rem;">
+  <kendo-card [width]="'100%'">
+    <kendo-card-body style="display: flex; flex-direction: column; gap: 8px;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div>
+          <div class="headline-md">Arrange your board</div>
+          <p class="label-sm">Tap a number, then tap a cell</p>
+        </div>
+        <span style="font-size: 13px; font-weight: 600; color: var(--on-surface-variant);">{{ readyCount }}/{{ totalPlayers }}</span>
+      </div>
+      <kendo-progressbar [value]="readyCount" [max]="totalPlayers || 1" [label]="{ visible: false }" [animation]="true"></kendo-progressbar>
+    </kendo-card-body>
+  </kendo-card>
+
+  <kendo-card [width]="'100%'">
+    <kendo-card-body style="padding: 8px; background: var(--surface-container-low); border-radius: var(--radius-lg);">
+      <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;">
+        @for (value of cells(); track $index) {
+        <button
+          kendoButton
+          type="button"
+          [themeColor]="isCellSelected($index) ? 'primary' : 'base'"
+          [fillMode]="value !== null ? 'solid' : 'outline'"
+          (click)="selectCell($index)"
+          (dblclick)="returnToTray($index)"
+          style="aspect-ratio: 1; padding: 0; font-weight: 800; font-size: 18px; justify-content: center;"
+          [style.borderStyle]="value === null ? 'dashed' : 'solid'"
+        >
+          {{ value ?? '' }}
+        </button>
+        }
+      </div>
+    </kendo-card-body>
+  </kendo-card>
+
+  <p class="label-sm" style="text-align: center;">Double-tap a filled cell to send it back to the tray</p>
+
+  <kendo-card [width]="'100%'">
+    <kendo-card-body style="display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <span class="label-sm">Unplaced numbers ({{ tray().length }})</span>
+        <button kendoButton [fillMode]="'outline'" size="small" (click)="randomize()">Randomize</button>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px; min-height: 40px;">
+        @for (n of tray(); track n) {
+        <kendo-chip
+          [label]="n.toString()"
+          [selected]="isTraySelected(n)"
+          [themeColor]="isTraySelected(n) ? 'info' : 'base'"
+          [rounded]="'full'"
+          (contentClick)="selectTray(n)"
+        ></kendo-chip>
+        }
+      </div>
+    </kendo-card-body>
+  </kendo-card>
+
+  <button kendoButton themeColor="primary" [rounded]="'large'" size="large" [disabled]="!isFull" (click)="confirmReady()">
+    {{ isFull ? 'Ready' : 'Fill all 25 cells first' }}
+  </button>
+</div>

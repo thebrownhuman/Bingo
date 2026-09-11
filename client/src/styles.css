@@ -1,0 +1,279 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
+:root {
+  --surface: #faf8ff;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #f2f3ff;
+  --surface-container: #eaedff;
+  --surface-container-high: #e2e7ff;
+  --surface-container-highest: #dae2fd;
+  --on-surface: #131b2e;
+  --on-surface-variant: #464556;
+  --outline: #777587;
+  --outline-variant: #c7c4d8;
+
+  --primary: #412edc;
+  --on-primary: #ffffff;
+  --primary-container: #5b4ef5;
+  --on-primary-container: #ece8ff;
+
+  --secondary: #006c49;
+  --on-secondary: #ffffff;
+  --secondary-container: #6cf8bb;
+  --on-secondary-container: #00714d;
+
+  --error: #ba1a1a;
+  --on-error: #ffffff;
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+}
+
+/* Kendo's brand colors (primary/success/error/radius/font) are set via Sass
+   variable overrides in src/theme-light.scss / theme-dark.scss, not CSS
+   custom properties — this Kendo theme generation compiles color into
+   static class rules rather than exposing them as runtime CSS variables.
+   Kendo's own dark/light swap is handled by ThemeService toggling the
+   #dark-theme-link stylesheet; the variables below are for our own
+   hand-written UI chrome (headers, labels, non-Kendo surfaces) only. */
+
+:root[data-theme='dark'] {
+  --surface: #121212;
+  --surface-container-lowest: #1c1c1e;
+  --surface-container-low: #202022;
+  --surface-container: #262628;
+  --surface-container-high: #2c2c2e;
+  --surface-container-highest: #333335;
+  --on-surface: #f5f5f7;
+  --on-surface-variant: #a1a1aa;
+  --outline: #6b6b70;
+  --outline-variant: #3a3a3c;
+
+  --primary: #6f61fa;
+  --on-primary: #ffffff;
+  --primary-container: #5b4ef5;
+  --on-primary-container: #ece8ff;
+
+  --secondary: #10b981;
+  --on-secondary: #ffffff;
+  --secondary-container: #0f3d30;
+  --on-secondary-container: #6cf8bb;
+
+  --error: #ef4444;
+  --on-error: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: radial-gradient(1200px circle at 50% -10%, var(--surface-container-low), var(--surface) 60%);
+  background-attachment: fixed;
+  color: var(--on-surface);
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+button,
+input {
+  font-family: inherit;
+}
+
+.screen {
+  max-width: 440px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding: 1rem;
+  padding-bottom: 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.card {
+  background: var(--surface-container-lowest);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 700;
+  margin: 0;
+}
+
+.headline-lg {
+  font-size: 24px;
+  line-height: 30px;
+  letter-spacing: -0.01em;
+}
+
+.headline-md {
+  font-size: 20px;
+  line-height: 26px;
+  letter-spacing: -0.01em;
+}
+
+.label-sm {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--on-surface-variant);
+  text-transform: uppercase;
+}
+
+.btn {
+  height: 52px;
+  border-radius: var(--radius-md);
+  border: none;
+  font-weight: 700;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 0.05s ease;
+}
+
+.btn:active {
+  transform: translateY(2px);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: var(--on-primary);
+  box-shadow: 0 4px 0 #2c1ca8;
+}
+
+.btn-primary:active:not(:disabled) {
+  box-shadow: 0 2px 0 #2c1ca8;
+}
+
+.btn-secondary {
+  background: var(--surface-container-lowest);
+  color: var(--on-surface);
+  border: 2px solid var(--outline-variant);
+  box-shadow: 0 4px 0 var(--outline-variant);
+}
+
+.field {
+  height: 48px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--outline-variant);
+  padding: 0 14px;
+  font-size: 16px;
+  background: var(--surface-container-lowest);
+  color: var(--on-surface);
+  width: 100%;
+}
+
+.field:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.chip {
+  height: 32px;
+  border-radius: 9999px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--surface-container-low);
+  color: var(--on-surface);
+}
+
+.chip-accent {
+  background: var(--secondary-container);
+  color: var(--on-secondary-container);
+}
+
+.error-text {
+  color: var(--error);
+  font-size: 13px;
+}
+
+html {
+  color-scheme: light dark;
+}
+
+body,
+kendo-card.k-card,
+.k-button,
+.k-chip,
+.k-textbox,
+.k-input,
+.k-progressbar {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+kendo-card.k-card {
+  border-radius: 20px;
+  border: 1px solid var(--outline-variant);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+:root[data-theme='dark'] kendo-card.k-card {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 28px rgba(0, 0, 0, 0.45);
+}
+
+kendo-card.k-card:hover {
+  border-color: var(--outline);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+:root[data-theme='dark'] kendo-card.k-card:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35), 0 12px 36px rgba(0, 0, 0, 0.55);
+}
+
+.k-button {
+  border-radius: 12px !important;
+}
+
+.k-button:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+:root[data-theme='dark'] .k-button:not(:disabled):hover {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+.k-button:not(:disabled):active {
+  transform: translateY(0);
+}
+
+.k-chip {
+  border-radius: 999px !important;
+}
+
+.k-chip:hover {
+  transform: translateY(-1px);
+}
+
+.k-textbox,
+.k-input {
+  border-radius: 12px !important;
+}
+
+.bingo-toast {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-weight: 600;
+}

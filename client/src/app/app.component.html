@@ -1,0 +1,10 @@
+<button
+  kendoButton
+  [fillMode]="'outline'"
+  size="small"
+  style="position: fixed; top: 12px; right: 12px; z-index: 1000;"
+  (click)="theme.toggle()"
+>
+  {{ theme.mode() === 'dark' ? 'Light mode' : 'Dark mode' }}
+</button>
+<router-outlet></router-outlet>

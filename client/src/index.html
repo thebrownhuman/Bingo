@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Client</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="theme-light.css" id="light-theme-link">
+  <link rel="stylesheet" href="theme-dark.css" id="dark-theme-link" disabled>
+  <script>
+    (function () {
+      var mode = localStorage.getItem('bingo-party-theme') === 'dark' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', mode);
+      if (mode === 'dark') {
+        document.addEventListener('DOMContentLoaded', function () {
+          var lightLink = document.getElementById('light-theme-link');
+          var darkLink = document.getElementById('dark-theme-link');
+          if (lightLink) lightLink.disabled = true;
+          if (darkLink) darkLink.disabled = false;
+        });
+      }
+    })();
+  </script>
+</head>
+<body>
+  <app-root></app-root>
+</body>
+</html>

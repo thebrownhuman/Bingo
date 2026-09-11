@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><title>Card Setup - Bingo Party</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "inverse-surface": "#283044", "on-secondary": "#ffffff", "on-error-container": "#93000a", "error-container": "#ffdad6", "on-error": "#ffffff", "inverse-on-surface": "#eef0ff", "primary-fixed": "#e3dfff", "on-primary-container": "#ece8ff", "surface-bright": "#faf8ff", "surface-container-high": "#e2e7ff", "surface": "#faf8ff", "on-surface": "#131b2e", "on-primary-fixed-variant": "#351bd2", "secondary-container": "#6cf8bb", "background": "#faf8ff", "on-tertiary-fixed-variant": "#793000", "secondary-fixed-dim": "#4edea3", "tertiary": "#8a3800", "surface-container-low": "#f2f3ff", "primary-fixed-dim": "#c4c0ff", "secondary-fixed": "#6ffbbe", "primary-container": "#5b4ef5", "inverse-primary": "#c4c0ff", "on-tertiary-container": "#ffe5da", "outline-variant": "#c7c4d8", "secondary": "#006c49", "surface-container": "#eaedff", "tertiary-container": "#b14a00", "on-primary": "#ffffff", "on-surface-variant": "#464556", "on-primary-fixed": "#110068", "surface-container-highest": "#dae2fd", "tertiary-fixed-dim": "#ffb692", "surface-dim": "#d2d9f4", "on-tertiary": "#ffffff", "surface-variant": "#dae2fd", "surface-tint": "#4f40e9", "surface-container-lowest": "#ffffff", "primary": "#412edc", "tertiary-fixed": "#ffdbcb", "on-secondary-fixed-variant": "#005236", "error": "#ba1a1a", "on-background": "#131b2e", "on-tertiary-fixed": "#341100", "on-secondary-fixed": "#002113", "outline": "#777587", "on-secondary-container": "#00714d" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-lg": "1rem", "space-xs": "0.25rem", "space-sm": "0.5rem", "margin": "1rem", "space-md": "0.75rem", "space-xl": "1.5rem", "gutter": "0.5rem" }, "fontFamily": { "body-md": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "tile-header": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "display-hero": ["Plus Jakarta Sans"], "display-hero-mobile": ["Plus Jakarta Sans"], "tile-number": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"], "label-sm": ["Plus Jakarta Sans"] }, "fontSize": { "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "500" }], "headline-lg": ["24px", { "lineHeight": "30px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "headline-md": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "tile-header": ["16px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "800" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "500" }], "display-hero": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }], "display-hero-mobile": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "800" }], "tile-number": ["22px", { "lineHeight": "22px", "letterSpacing": "0em", "fontWeight": "800" }], "label-md": ["13px", { "lineHeight": "16px", "fontWeight": "600" }], "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "700" }] } } } }</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-margin flex items-center justify-between"><div class="flex flex-col"><div class="flex items-center gap-space-xs"><span class="font-headline-md text-headline-md text-primary tracking-tight">Bingo Party</span><span class="px-space-xs py-0.5 rounded-full bg-surface-container-high text-on-primary-fixed-variant font-label-sm text-label-sm">LAN</span></div><div class="flex items-center gap-1 mt-0.5"><span class="w-2 h-2 rounded-full bg-secondary inline-block animate-pulse"></span><span class="font-label-sm text-label-sm text-on-surface-variant">Local LAN • Connected</span></div></div><div class="flex items-center gap-space-sm"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-20 bg-surface min-h-screen"><div class="flex flex-col w-full max-w-md mx-auto px-margin pb-6 gap-space-md select-none">
+<!-- Status & Match Info Card -->
+<section class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm mt-2">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary-fixed-dim animate-ping inline-block"></span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Board setup</h2>
+</div>
+<span class="inline-flex items-center gap-1.5 px-space-sm py-0.5 rounded-full bg-surface-container-high text-on-primary-fixed-variant font-label-sm text-label-sm font-bold">
+<span class="material-symbols-outlined text-[14px]">wifi_tethering</span>
+        PIN: 4821
+      </span>
+</div>
+<!-- Live Players Progress Pill & Bar -->
+<div class="bg-surface-container-low rounded-lg p-space-sm flex flex-col gap-1.5">
+<div class="flex items-center justify-between font-label-md text-label-md">
+<span class="text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-primary">groups</span>
+          Players ready
+        </span>
+<span class="text-primary font-bold" id="ready-status-text">3 of 5 locked in</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-highest overflow-hidden flex">
+<div class="h-full bg-secondary transition-all duration-300 rounded-full" style="width: 60%;"></div>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm pt-0.5">
+<span>Room: The Living Room Hub</span>
+<span class="text-secondary font-bold">Game starting soon</span>
+</div>
+</div>
+</section>
+<!-- Board Guidance Indicator -->
+<div class="flex items-center justify-between px-1">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-[18px]">touch_app</span>
+<span class="font-label-md text-label-md text-on-surface">Tap unplaced tiles below or pick a slot</span>
+</div>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-bold shadow-sm" id="tiles-remaining-badge">
+      7 left to place
+    </span>
+</div>
+<!-- 5x5 Bingo Board Matrix -->
+<section class="bg-surface-container-lowest p-space-sm rounded-xl shadow-md">
+<!-- Grid Column Headers -->
+<div class="grid grid-cols-5 gap-gutter text-center mb-2 font-tile-header text-tile-header text-primary tracking-wider">
+<div class="py-1 bg-surface-container-high rounded-lg text-primary font-bold">B</div>
+<div class="py-1 bg-surface-container-high rounded-lg text-primary font-bold">I</div>
+<div class="py-1 bg-surface-container-high rounded-lg text-primary font-bold">N</div>
+<div class="py-1 bg-surface-container-high rounded-lg text-primary font-bold">G</div>
+<div class="py-1 bg-surface-container-high rounded-lg text-primary font-bold">O</div>
+</div>
+<!-- 25 Cells Board -->
+<div class="grid grid-cols-5 gap-gutter aspect-square w-full" id="bingo-board">
+<!-- Row 1 -->
+<button class="board-cell bg-surface-container-low text-on-surface font-tile-number text-tile-number rounded-lg flex items-center justify-center aspect-square shadow-[0_3px_0_0_#c7c4d8] active:translate-y-0.5 active:shadow-none transition-all" data-index="0" data-value="1" type="button">1</button>
+<button class="board-cell bg-surface-container-low text-on-surface font-tile-number text-tile-number rounded-lg flex items-center justify-center aspect-square shadow-[0_3px_0_0_#c7c4d8] active:translate-y-0.5 active:shadow-none transition-all" data-index="1" data-value="2" type="button">2</button>
+<button class="board-cell bg-surface-container-low text-on-surface font-tile-number text-tile-number rounded-lg flex items-center justify-center aspect-square shadow-[0_3px_0_0_#c7c4d8] active:translate-y-0.5 active:shadow-none transition-all" data-index="2" data-value="3" type="button">3</button>
+<!-- Empty Slot 1 -->
+<button class="board-cell empty-slot bg-surface-container-high text-primary font-label-md text-label-md rounded-lg flex flex-col items-center justify-center aspect-square shadow-inner transition-all hover:bg-surface-variant" data-index="3" data-value="" type="button">
+<span class="material-symbols-outlined text-[20px] opacity-70">add</span>
+</button>
+<button class="board-cell bg-surface-container-low text-on-surface font-tile-number text-tile-number rounded-lg flex items-center justify-center aspect-square shadow-[0_3px_0_0_#c7c4d8] active:translate-y-0.5 active:shadow-none transition-all" data-index="4" data-value="5" type="button">5</button>
+<!-- Row 2 -->
+<button class="board-cell bg-surface-container-low text-on-surface font-tile-number text-tile-number rounded-lg flex items-center justify-center aspect-square shadow-[0_3px_0_0_#c7c4d8] active:translate-y-0.5 active:shadow-none transition-all" data-index="5" data-value="6" type="button">6</button>
+<button class="board-cell bg-surface-container-low text-on-surface font-tile-number text-tile-number rounded-lg flex items-center justify-center aspect-square shadow-[0_3px_0_0_#c7c4d8] active:translate-y-0.5 active:shadow-none transition-all" data-index="6" data-value="7" type="button">7</button>
+<button class="board-cell bg-surface-container-low text-on-surface font-tile-number text-tile-number rounded-lg flex items-center justify-center aspect-square shadow-[0_3px_0_0_#c7c4d8] active:translate-y-0.5 active:shadow-none transition-all" data-index="7" data-value="8" type="button">8</button>
+<!-- Empty Slot 2 -->
+<button class="board-cell empty-slot bg-surface-container-high text-primary font-label-md text-label-md rounded-lg flex flex-col items-center justify-center aspect-square shadow-inner transition-all hover:bg-surface-variant" data-index="8" data-value="" type="button">
+<span class="material-symbols-outlined text-[20px] opacity-70">add</span>
+</button>
+<button class="board-cell bg-surface-container-low text-on-surface font-tile-number text-tile-number rounded-lg flex items-center justify-center aspect-square shadow-[0_3px_0_0_#c7c4d8] active:translate-y-0.5 active:shadow-none transition-all" data-index="9" data-value="10" type="button">10</button>
+<!-- Row 3 -->
+<button class="board-cell bg-surface-container-low text-on-surface font-tile-number text-tile-number rounded-lg flex items-center justify-center aspect-square shadow-[0_3px_0_0_#c7c4d8] active:translate-y-0.5 active:shadow-none transition-all" data-index="10" data-value="11" type="button">11</button>
+<button class="board-cell bg-surface-container-low text-on-surface font-tile-number text-tile-number rounded-lg flex items-center justify-center aspect-square shadow-[0_3px_0_0_#c7c4d8] active:translate-y-0.5 active:shadow-none transition-all" data-index="11" data-value="12" type="button">12</button>
+<!-- Empty Slot 3 (Center or custom) -->
+<button class="board-cell empty-slot bg-surface-container-high text-primary font-label-md text-label-md rounded-lg flex flex-col items-center justify-center aspect-square shadow-inner transition-all hover:bg-surface-variant" data-index="12" data-value="" type="button">
+<span class="material-symbols-outlined text-[20px] opacity-70">add</span>
+</button>
+<button class="board-cell bg-surface-container-low text-on-surface font-tile-number text-tile-number rounded-lg flex items-center justify-center aspect-square shadow-[0_3px_0_0_#c7c4d8] active:translate-y-0.5 active:shadow-none transition-all" data-index="13" data-value="14" type="button">14</button>
+<button class="board-cell bg-surface-container-low text-on-surface font-tile-number text-tile-number rounded-lg flex items-center justify-center aspect-square shadow-[0_3px_0_0_#c7c4d8] active:translate-y-0.5 active:shadow-none transition-all" data-index="14" data-value="15" type="button">15</button>
+<!-- Row 4 -->
+<button class="board-cell bg-surface-container-low text-on-surface font-tile-number text-tile-number rounded-lg flex items-center justify-center aspect-square shadow-[0_3px_0_0_#c7c4d8] active:translate-y-0.5 active:shadow-none transition-all" data-index="15" data-value="16" type="button">16</button>
+<!-- Empty Slot 4 -->
+<button class="board-cell empty-slot bg-surface-container-high text-primary font-label-md text-label-md rounded-lg flex flex-col items-center justify-center aspect-square shadow-inner transition-all hover:bg-surface-variant" data-index="16" data-value="" type="button">
+<span class="material-symbols-outlined text-[20px] opacity-70">add</span>
+</button>
+<button class="board-cell bg-surface-container-low text-on-surface font-tile-number text-tile-number rounded-lg flex items-center justify-center aspect-square shadow-[0_3px_0_0_#c7c4d8] active:translate-y-0.5 active:shadow-none transition-all" data-index="17" data-value="18" type="button">18</button>
+<button class="board-cell bg-surface-container-low text-on-surface font-tile-number text-tile-number rounded-lg flex items-center justify-center aspect-square shadow-[0_3px_0_0_#c7c4d8] active:translate-y-0.5 active:shadow-none transition-all" data-index="18" data-value="19" type="button">19</button>
+<button class="board-cell bg-surface-container-low text-on-surface font-tile-number text-tile-number rounded-lg flex items-center justify-center aspect-square shadow-[0_3px_0_0_#c7c4d8] active:translate-y-0.5 active:shadow-none transition-all" data-index="19" data-value="20" type="button">20</button>
+<!-- Row 5 -->
+<!-- Empty Slot 5 -->
+<button class="board-cell empty-slot bg-surface-container-high text-primary font-label-md text-label-md rounded-lg flex flex-col items-center justify-center aspect-square shadow-inner transition-all hover:bg-surface-variant" data-index="20" data-value="" type="button">
+<span class="material-symbols-outlined text-[20px] opacity-70">add</span>
+</button>
+<!-- Empty Slot 6 -->
+<button class="board-cell empty-slot bg-surface-container-high text-primary font-label-md text-label-md rounded-lg flex flex-col items-center justify-center aspect-square shadow-inner transition-all hover:bg-surface-variant" data-index="21" data-value="" type="button">
+<span class="material-symbols-outlined text-[20px] opacity-70">add</span>
+</button>
+<button class="board-cell bg-surface-container-low text-on-surface font-tile-number text-tile-number rounded-lg flex items-center justify-center aspect-square shadow-[0_3px_0_0_#c7c4d8] active:translate-y-0.5 active:shadow-none transition-all" data-index="22" data-value="23" type="button">23</button>
+<button class="board-cell bg-surface-container-low text-on-surface font-tile-number text-tile-number rounded-lg flex items-center justify-center aspect-square shadow-[0_3px_0_0_#c7c4d8] active:translate-y-0.5 active:shadow-none transition-all" data-index="23" data-value="24" type="button">24</button>
+<!-- Empty Slot 7 -->
+<button class="board-cell empty-slot bg-surface-container-high text-primary font-label-md text-label-md rounded-lg flex flex-col items-center justify-center aspect-square shadow-inner transition-all hover:bg-surface-variant" data-index="24" data-value="" type="button">
+<span class="material-symbols-outlined text-[20px] opacity-70">add</span>
+</button>
+</div>
+</section>
+<!-- Number Tray of Remaining Tiles (1-25) -->
+<section class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5 font-label-md text-label-md text-on-surface">
+<span class="material-symbols-outlined text-[16px] text-tertiary-container">inventory_2</span>
+<span>Remaining tiles tray</span>
+</div>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Tap number to auto-fill slot</span>
+</div>
+<!-- Available Unplaced Tiles Container -->
+<div class="flex flex-wrap gap-2.5 items-center" id="tile-tray">
+<button class="tray-tile min-w-[44px] h-11 px-3 rounded-lg bg-primary-container text-on-primary font-tile-number text-tile-number shadow-[0_3px_0_0_#351bd2] active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center" data-tile="4" type="button">4</button>
+<button class="tray-tile min-w-[44px] h-11 px-3 rounded-lg bg-primary-container text-on-primary font-tile-number text-tile-number shadow-[0_3px_0_0_#351bd2] active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center" data-tile="9" type="button">9</button>
+<button class="tray-tile min-w-[44px] h-11 px-3 rounded-lg bg-primary-container text-on-primary font-tile-number text-tile-number shadow-[0_3px_0_0_#351bd2] active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center" data-tile="13" type="button">13</button>
+<button class="tray-tile min-w-[44px] h-11 px-3 rounded-lg bg-primary-container text-on-primary font-tile-number text-tile-number shadow-[0_3px_0_0_#351bd2] active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center" data-tile="17" type="button">17</button>
+<button class="tray-tile min-w-[44px] h-11 px-3 rounded-lg bg-primary-container text-on-primary font-tile-number text-tile-number shadow-[0_3px_0_0_#351bd2] active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center" data-tile="21" type="button">21</button>
+<button class="tray-tile min-w-[44px] h-11 px-3 rounded-lg bg-primary-container text-on-primary font-tile-number text-tile-number shadow-[0_3px_0_0_#351bd2] active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center" data-tile="22" type="button">22</button>
+<button class="tray-tile min-w-[44px] h-11 px-3 rounded-lg bg-primary-container text-on-primary font-tile-number text-tile-number shadow-[0_3px_0_0_#351bd2] active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center" data-tile="25" type="button">25</button>
+</div>
+</section>
+<!-- Secondary Actions: Randomize & Clear Board -->
+<div class="grid grid-cols-2 gap-space-sm">
+<button class="h-11 px-space-md rounded-xl bg-surface-container text-on-surface font-label-md text-label-md shadow-[0_3px_0_0_#c7c4d8] active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-1.5 font-bold" id="btn-randomize" type="button">
+<span class="material-symbols-outlined text-[18px] text-primary">shuffle</span>
+      Randomize
+    </button>
+<button class="h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface-variant font-label-md text-label-md shadow-[0_3px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-1.5 font-bold hover:text-error" id="btn-clear" type="button">
+<span class="material-symbols-outlined text-[18px]">restart_alt</span>
+      Clear board
+    </button>
+</div>
+<!-- Primary Lock In / Ready Action Button -->
+<div class="flex flex-col gap-1.5 mt-1">
+<button class="w-full h-14 rounded-xl bg-surface-container-highest text-outline font-headline-md text-headline-md shadow-none flex items-center justify-center gap-2 cursor-not-allowed transition-all duration-200" disabled="" id="btn-ready" type="button">
+<span class="material-symbols-outlined text-[24px]">check_circle</span>
+      Lock in card
+    </button>
+<p class="text-center font-label-sm text-label-sm text-on-surface-variant" id="ready-helper-text">
+      Place all 25 numbers to lock in your board
+    </p>
+</div>
+</div>
+<script>
+  (function() {
+    const boardEl = document.getElementById('bingo-board');
+    const trayEl = document.getElementById('tile-tray');
+    const badgeEl = document.getElementById('tiles-remaining-badge');
+    const readyBtn = document.getElementById('btn-ready');
+    const readyHelper = document.getElementById('ready-helper-text');
+    const randomizeBtn = document.getElementById('btn-randomize');
+    const clearBtn = document.getElementById('btn-clear');
+
+    function updateState() {
+      const emptySlots = boardEl.querySelectorAll('.empty-slot');
+      const count = emptySlots.length;
+      
+      if (badgeEl) {
+        badgeEl.textContent = count === 0 ? 'All 25 placed!' : count + ' left to place';
+        if (count === 0) {
+          badgeEl.className = 'font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-bold shadow-sm';
+        } else {
+          badgeEl.className = 'font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-bold shadow-sm';
+        }
+      }
+
+      if (readyBtn && readyHelper) {
+        if (count === 0) {
+          readyBtn.disabled = false;
+          readyBtn.className = 'w-full h-14 rounded-xl bg-primary text-on-primary font-headline-md text-headline-md shadow-[0_4px_0_0_#351bd2] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer';
+          readyHelper.textContent = 'Board complete! Tap to lock in and wait for host';
+          readyHelper.className = 'text-center font-label-sm text-label-sm text-secondary font-bold';
+        } else {
+          readyBtn.disabled = true;
+          readyBtn.className = 'w-full h-14 rounded-xl bg-surface-container-highest text-outline font-headline-md text-headline-md shadow-none flex items-center justify-center gap-2 cursor-not-allowed transition-all duration-200';
+          readyHelper.textContent = 'Place all 25 numbers to lock in your board';
+          readyHelper.className = 'text-center font-label-sm text-label-sm text-on-surface-variant';
+        }
+      }
+    }
+
+    // Tap on Tray Tile to fill first available empty slot
+    trayEl.addEventListener('click', function(e) {
+      const tileBtn = e.target.closest('.tray-tile');
+      if (!tileBtn) return;
+      
+      const val = tileBtn.getAttribute('data-tile');
+      const firstEmpty = boardEl.querySelector('.empty-slot');
+      if (!firstEmpty) return;
+
+      firstEmpty.classList.remove('empty-slot', 'bg-surface-container-high', 'text-primary', 'shadow-inner');
+      firstEmpty.classList.add('bg-surface-container-low', 'text-on-surface', 'font-tile-number', 'text-tile-number', 'shadow-[0_3px_0_0_#c7c4d8]', 'active:translate-y-0.5', 'active:shadow-none');
+      firstEmpty.setAttribute('data-value', val);
+      firstEmpty.textContent = val;
+
+      tileBtn.remove();
+      updateState();
+    });
+
+    // Tap on Board Cell to remove a placed number back to tray
+    boardEl.addEventListener('click', function(e) {
+      const cell = e.target.closest('.board-cell');
+      if (!cell || cell.classList.contains('empty-slot')) return;
+
+      const val = cell.getAttribute('data-value');
+      if (!val) return;
+
+      // Revert cell to empty slot
+      cell.classList.remove('bg-surface-container-low', 'text-on-surface', 'font-tile-number', 'text-tile-number', 'shadow-[0_3px_0_0_#c7c4d8]', 'active:translate-y-0.5', 'active:shadow-none');
+      cell.classList.add('empty-slot', 'bg-surface-container-high', 'text-primary', 'shadow-inner');
+      cell.setAttribute('data-value', '');
+      cell.innerHTML = '<span class="material-symbols-outlined text-[20px] opacity-70">add</span>';
+
+      // Put number back in tray in sorted order
+      const newBtn = document.createElement('button');
+      newBtn.type = 'button';
+      newBtn.setAttribute('data-tile', val);
+      newBtn.className = 'tray-tile min-w-[44px] h-11 px-3 rounded-lg bg-primary-container text-on-primary font-tile-number text-tile-number shadow-[0_3px_0_0_#351bd2] active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center';
+      newBtn.textContent = val;
+
+      const tiles = Array.from(trayEl.children);
+      let inserted = false;
+      for (let i = 0; i < tiles.length; i++) {
+        if (parseInt(tiles[i].getAttribute('data-tile'), 10) > parseInt(val, 10)) {
+          trayEl.insertBefore(newBtn, tiles[i]);
+          inserted = true;
+          break;
+        }
+      }
+      if (!inserted) {
+        trayEl.appendChild(newBtn);
+      }
+
+      updateState();
+    });
+
+    // Randomize Action: fills all remaining or shuffles 1-25
+    randomizeBtn.addEventListener('click', function() {
+      const nums = Array.from({length: 25}, (_, i) => i + 1).sort(() => Math.random() - 0.5);
+      const cells = boardEl.querySelectorAll('.board-cell');
+      
+      cells.forEach((cell, idx) => {
+        const val = nums[idx];
+        cell.classList.remove('empty-slot', 'bg-surface-container-high', 'text-primary', 'shadow-inner');
+        cell.classList.add('bg-surface-container-low', 'text-on-surface', 'font-tile-number', 'text-tile-number', 'shadow-[0_3px_0_0_#c7c4d8]', 'active:translate-y-0.5', 'active:shadow-none');
+        cell.setAttribute('data-value', val);
+        cell.textContent = val;
+      });
+
+      trayEl.innerHTML = '';
+      updateState();
+    });
+
+    // Clear board action: sends all to tray
+    clearBtn.addEventListener('click', function() {
+      const cells = boardEl.querySelectorAll('.board-cell');
+      cells.forEach(cell => {
+        cell.classList.remove('bg-surface-container-low', 'text-on-surface', 'font-tile-number', 'text-tile-number', 'shadow-[0_3px_0_0_#c7c4d8]', 'active:translate-y-0.5', 'active:shadow-none');
+        cell.classList.add('empty-slot', 'bg-surface-container-high', 'text-primary', 'shadow-inner');
+        cell.setAttribute('data-value', '');
+        cell.innerHTML = '<span class="material-symbols-outlined text-[20px] opacity-70">add</span>';
+      });
+
+      trayEl.innerHTML = '';
+      for (let i = 1; i <= 25; i++) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.setAttribute('data-tile', i);
+        btn.className = 'tray-tile min-w-[44px] h-11 px-3 rounded-lg bg-primary-container text-on-primary font-tile-number text-tile-number shadow-[0_3px_0_0_#351bd2] active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center';
+        btn.textContent = i;
+        trayEl.appendChild(btn);
+      }
+      updateState();
+    });
+
+    // Ready Button Action
+    readyBtn.addEventListener('click', function() {
+      if (readyBtn.disabled) return;
+      readyBtn.innerHTML = '<span class="material-symbols-outlined text-[24px]">task_alt</span> You are ready!';
+      readyBtn.className = 'w-full h-14 rounded-xl bg-secondary text-on-secondary font-headline-md text-headline-md shadow-[0_4px_0_0_#005236] flex items-center justify-center gap-2 pointer-events-none';
+      const readyStatus = document.getElementById('ready-status-text');
+      if (readyStatus) readyStatus.textContent = '4 of 5 locked in';
+    });
+
+    updateState();
+  })();
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]" data-active-classes="text-primary font-bold"><div class="flex justify-around items-center h-16 px-gutter max-w-md mx-auto"><a class="flex flex-col items-center justify-center min-w-[64px] min-h-[44px] text-on-surface-variant hover:text-on-surface transition-colors" data-path="party-rooms" href="#"><span class="material-symbols-outlined text-[24px]">grid_view</span><span class="font-label-sm text-label-sm mt-0.5">Rooms</span></a><a aria-current="page" class="flex flex-col items-center justify-center min-w-[64px] min-h-[44px] transition-colors text-primary font-bold" data-path="card-setup" href="#"><span class="material-symbols-outlined text-[24px]">style</span><span class="font-label-sm text-label-sm mt-0.5">Cards</span></a><a class="flex flex-col items-center justify-center min-w-[64px] min-h-[44px] text-on-surface-variant hover:text-on-surface transition-colors" data-path="leaderboard" href="#"><span class="material-symbols-outlined text-[24px]">emoji_events</span><span class="font-label-sm text-label-sm mt-0.5">Scores</span></a><a class="flex flex-col items-center justify-center min-w-[64px] min-h-[44px] text-on-surface-variant hover:text-on-surface transition-colors" data-path="player-profile" href="#"><span class="material-symbols-outlined text-[24px]">manage_accounts</span><span class="font-label-sm text-label-sm mt-0.5">Player</span></a></div></nav></body></html>

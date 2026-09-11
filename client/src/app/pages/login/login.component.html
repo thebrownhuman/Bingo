@@ -1,0 +1,46 @@
+<div class="screen" style="justify-content: center;">
+  <div style="text-align: center; margin-bottom: 1rem;">
+    <div class="headline-lg" style="color: var(--primary);">Bingo party</div>
+    <p class="label-sm">Local LAN multiplayer</p>
+  </div>
+
+  <kendo-card [width]="'100%'">
+    <kendo-card-body style="display: flex; flex-direction: column; gap: 20px;">
+      <kendo-floatinglabel text="Username">
+        <kendo-textbox
+          [(ngModel)]="username"
+          name="username"
+          [clearButton]="true"
+          (keydown.enter)="submit()"
+        ></kendo-textbox>
+      </kendo-floatinglabel>
+
+      <kendo-floatinglabel text="Password">
+        <kendo-textbox
+          [(ngModel)]="password"
+          name="password"
+          type="password"
+          (keydown.enter)="submit()"
+        ></kendo-textbox>
+      </kendo-floatinglabel>
+
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <input type="checkbox" kendoCheckBox [(ngModel)]="rememberMe" name="rememberMe" id="rememberMe" />
+        <label for="rememberMe" style="font-size: 14px; color: var(--on-surface-variant);">Remember me on this device</label>
+      </div>
+
+      @if (errorMessage()) {
+      <p class="error-text">{{ errorMessage() }}</p>
+      }
+
+      <button kendoButton themeColor="primary" [rounded]="'large'" size="large" style="width: 100%;" [disabled]="loading()" (click)="submit()">
+        @if (loading()) {
+        <kendo-loader size="small" themeColor="light" style="margin-right: 8px;"></kendo-loader>
+        }
+        {{ loading() ? 'Signing in…' : 'Sign in' }}
+      </button>
+    </kendo-card-body>
+  </kendo-card>
+
+  <p class="label-sm" style="text-align: center;">Accounts are issued by your host — no sign-up here.</p>
+</div>

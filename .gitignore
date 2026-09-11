@@ -1,0 +1,26 @@
+# Node
+node_modules/
+npm-debug.log*
+
+# Server build output
+server/dist/
+
+# Server local user data (regenerate with `npm run seed`)
+server/src/db/users.json
+
+# Client build output (client/ has its own .gitignore too)
+client/dist/
+client/.angular/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.local
+
+# Personal Telerik/Kendo UI license — never commit
+telerik-license.txt
