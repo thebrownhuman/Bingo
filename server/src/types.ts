@@ -1,11 +1,20 @@
 export type Role = 'admin' | 'player';
 
+export interface GameRecord {
+  roomCode: string;
+  playedAt: string;
+  opponents: string[];
+  won: boolean;
+}
+
 export interface User {
   id: string;
   username: string;
   passwordHash: string;
   displayName: string;
   role: Role;
+  /** Every finished game this player took part in — newest first. */
+  games: GameRecord[];
 }
 
 export type PartyStatus = 'setup' | 'in_progress' | 'finished';

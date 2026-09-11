@@ -28,6 +28,7 @@ function seed() {
       passwordHash: bcrypt.hashSync(account.password, 10),
       displayName: account.displayName,
       role: account.role,
+      games: [],
     };
     userStore.upsert(user);
     console.log(`Created user: ${account.username} / ${account.password} (${account.role})`);

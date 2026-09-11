@@ -1,14 +1,14 @@
 // Bingo Party's Kendo theme customization — dark mode.
 // Near-black surfaces with subtle borders (reference: Apple Music's dark
 // sign-in modal — #1c1c1e cards over a #121212 page, muted gray secondary
-// text) but keeping the Bingo Party brand accents (indigo/emerald) instead
-// of adopting the reference's red, per the project's own color identity.
+// text). Primary accent is red (iOS system red pair) per explicit brand
+// direction, replacing the earlier indigo everywhere blue/indigo showed up.
 // This is a fully separate compiled Kendo swatch (Kendo's dark mode isn't a
 // runtime CSS-variable flip — see theme-dark.css bundling notes in
 // angular.json) toggled at runtime by enabling/disabling its <link>.
 
 $dark-theme: true;
-$primary: #6f61fa;
+$primary: #ff453a;
 $success: #10b981;
 $error: #ef4444;
 $border-radius: 8px;

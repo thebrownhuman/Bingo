@@ -2,38 +2,64 @@ import fs from 'fs';
 import path from 'path';
 import { User } from '../types';
 
-const FILE_PATH = path.join(__dirname, 'users.json');
+// One JSON file per player, named after their username, kept outside src/ so
+// ts-node-dev's file watcher never sees these writes and restarts the
+// process mid-request (that restart race was silently corrupting the old
+// single shared users.json file — accounts were vanishing).
+const PLAYERS_DIR = path.join(__dirname, '..', '..', 'data', 'players');
 
-function readAll(): User[] {
-  if (!fs.existsSync(FILE_PATH)) {
-    return [];
+function ensureDir(): void {
+  if (!fs.existsSync(PLAYERS_DIR)) {
+    fs.mkdirSync(PLAYERS_DIR, { recursive: true });
   }
-  const raw = fs.readFileSync(FILE_PATH, 'utf-8');
-  return JSON.parse(raw) as User[];
 }
 
-function writeAll(users: User[]): void {
-  fs.writeFileSync(FILE_PATH, JSON.stringify(users, null, 2), 'utf-8');
+function filePathFor(username: string): string {
+  return path.join(PLAYERS_DIR, `${username.toLowerCase()}.json`);
+}
+
+function readFile(filePath: string): User | undefined {
+  if (!fs.existsSync(filePath)) return undefined;
+  const raw = fs.readFileSync(filePath, 'utf-8');
+  const user = JSON.parse(raw) as User;
+  if (!user.games) user.games = [];
+  return user;
+}
+
+function writeFile(user: User): void {
+  ensureDir();
+  fs.writeFileSync(filePathFor(user.username), JSON.stringify(user, null, 2), 'utf-8');
 }
 
 export const userStore = {
   all(): User[] {
-    return readAll();
+    ensureDir();
+    return fs
+      .readdirSync(PLAYERS_DIR)
+      .filter((f) => f.endsWith('.json'))
+      .map((f) => readFile(path.join(PLAYERS_DIR, f)))
+      .filter((u): u is User => Boolean(u));
   },
   byUsername(username: string): User | undefined {
-    return readAll().find((u) => u.username.toLowerCase() === username.toLowerCase());
+    return readFile(filePathFor(username));
   },
   byId(id: string): User | undefined {
-    return readAll().find((u) => u.id === id);
+    return this.all().find((u) => u.id === id);
   },
   upsert(user: User): void {
-    const users = readAll();
-    const idx = users.findIndex((u) => u.id === user.id);
-    if (idx >= 0) {
-      users[idx] = user;
-    } else {
-      users.push(user);
-    }
-    writeAll(users);
+    writeFile({ ...user, games: user.games ?? [] });
+  },
+  remove(id: string): boolean {
+    const user = this.byId(id);
+    if (!user) return false;
+    fs.unlinkSync(filePathFor(user.username));
+    return true;
+  },
+  /** Appends a finished-game record to a player's permanent file. */
+  recordGame(userId: string, record: User['games'][number]): void {
+    const user = this.byId(userId);
+    if (!user) return;
+    user.games = [record, ...(user.games ?? [])];
+    writeFile(user);
   },
 };

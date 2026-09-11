@@ -2,6 +2,7 @@ import { Server, Socket } from 'socket.io';
 import { authService, TokenPayload } from '../auth/auth.service';
 import { gameEngine, GameError, MAX_PLAYERS } from '../game/game.engine';
 import { partyStore } from '../party/party.store';
+import { sessionRegistry } from '../session/session.registry';
 import { PartyState } from '../types';
 
 interface AuthedSocket extends Socket {
@@ -38,6 +39,29 @@ export function registerSocketHandlers(io: Server) {
 
   io.on('connection', (socket: AuthedSocket) => {
     const user = socket.user!;
+
+    // Session takeover: if this account is already connected from another
+    // tab/device, don't silently displace it — ask the new connection to
+    // confirm before kicking the old one.
+    const existingSocketId = sessionRegistry.activeSocketId(user.userId);
+    const existingSocket = existingSocketId ? io.sockets.sockets.get(existingSocketId) : undefined;
+    if (existingSocket && existingSocket.id !== socket.id) {
+      socket.emit('session:conflict');
+    } else {
+      sessionRegistry.claim(user.userId, socket.id);
+      socket.emit('session:ready');
+    }
+
+    socket.on('session:force_login', () => {
+      const currentSocketId = sessionRegistry.activeSocketId(user.userId);
+      const otherSocket = currentSocketId ? io.sockets.sockets.get(currentSocketId) : undefined;
+      if (otherSocket && otherSocket.id !== socket.id) {
+        otherSocket.emit('session:kicked');
+        otherSocket.disconnect(true);
+      }
+      sessionRegistry.claim(user.userId, socket.id);
+      socket.emit('session:ready');
+    });
 
     socket.on('party:create', (payload: { maxPlayers?: number }, ack) => {
       try {
@@ -113,6 +137,7 @@ export function registerSocketHandlers(io: Server) {
     });
 
     socket.on('disconnect', () => {
+      sessionRegistry.releaseIfCurrent(user.userId, socket.id);
       for (const room of socket.rooms) {
         if (!room.startsWith('party:')) continue;
         const roomCode = room.replace('party:', '');

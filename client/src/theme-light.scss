@@ -1,11 +1,11 @@
 // Bingo Party's Kendo theme customization — light mode.
-// Overrides Kendo's default SASS variables (all `!default`) with the brand
-// palette from stitch_bingo_party_mobile_app/bingo_party/DESIGN.md before the
+// Overrides Kendo's default SASS variables (all `!default`) before the
 // theme partials that consume them are imported — the classic Sass
 // `@import` global-override pattern (Kendo's own partials still use
-// `@import` internally, not `@use`/`@forward` configuration).
+// `@import` internally, not `@use`/`@forward` configuration). Primary
+// accent is red (iOS system red), replacing the earlier indigo/blue.
 
-$primary: #412edc;
+$primary: #ff3b30;
 $success: #006c49;
 $error: #ba1a1a;
 $border-radius: 8px;

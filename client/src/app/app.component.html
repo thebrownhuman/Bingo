@@ -1,10 +1,50 @@
 <button
   kendoButton
   [fillMode]="'outline'"
-  size="small"
-  style="position: fixed; top: 12px; right: 12px; z-index: 1000;"
+  [rounded]="'full'"
+  size="large"
+  [attr.aria-label]="theme.mode() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+  title="{{ theme.mode() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode' }}"
+  style="position: fixed; bottom: 16px; right: 16px; z-index: 1000; width: 44px; height: 44px; padding: 0; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);"
   (click)="theme.toggle()"
 >
-  {{ theme.mode() === 'dark' ? 'Light mode' : 'Dark mode' }}
+  @if (theme.mode() === 'dark') {
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="4"></circle>
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+  </svg>
+  } @else {
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+  </svg>
+  }
 </button>
 <router-outlet></router-outlet>
+
+@if (socket.sessionConflict()) {
+<kendo-dialog [width]="360">
+  <div style="display: flex; flex-direction: column; gap: 14px; padding: 4px 0;">
+    <div class="headline-md">Already signed in elsewhere</div>
+    <p style="font-size: 14px; color: var(--on-surface-variant); margin: 0;">
+      This account is already logged in on another device or tab. You can log in here instead — that will sign the
+      other session out — or leave things as they are.
+    </p>
+    <div style="display: flex; gap: 10px;">
+      <button kendoButton [fillMode]="'outline'" style="flex: 1;" (click)="declineTakeover()">Don't log in</button>
+      <button kendoButton themeColor="primary" style="flex: 1;" (click)="takeOverSession()">Log in here</button>
+    </div>
+  </div>
+</kendo-dialog>
+}
+
+@if (socket.sessionKicked()) {
+<kendo-dialog [width]="340">
+  <div style="display: flex; flex-direction: column; gap: 14px; padding: 4px 0; text-align: center;">
+    <div class="headline-md">Signed out</div>
+    <p style="font-size: 14px; color: var(--on-surface-variant); margin: 0;">
+      Your account was signed in on another device, so this session was signed out.
+    </p>
+    <button kendoButton themeColor="primary" (click)="acknowledgeKicked()">OK</button>
+  </div>
+</kendo-dialog>
+}

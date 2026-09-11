@@ -1,9 +1,10 @@
 import { PartyState, PlayerState, PublicPartyState, PublicPlayer, Role } from '../types';
 import { partyStore } from '../party/party.store';
 import { countCompletedLines, hasWon, pickRandomRemaining, randomFullLayout, shuffle } from './board.util';
+import { userStore } from '../db/userStore';
 
 export const DISCONNECT_GRACE_MS = 30_000;
-export const MIN_PLAYERS = 3;
+export const MIN_PLAYERS = 2;
 export const MAX_PLAYERS = 7;
 
 const disconnectTimers = new Map<string, NodeJS.Timeout>(); // key: `${roomCode}:${userId}`
@@ -123,9 +124,25 @@ export const gameEngine = {
     if (winner) {
       party.winnerUserId = winner.userId;
       party.status = 'finished';
+      this.recordGameHistory(party);
       return;
     }
     this.advanceTurn(party);
+  },
+
+  /** Permanently appends this finished game to every participant's player file. */
+  recordGameHistory(party: PartyState): void {
+    const players = [...party.players.values()];
+    const playedAt = new Date().toISOString();
+    for (const player of players) {
+      const opponents = players.filter((p) => p.userId !== player.userId).map((p) => p.displayName);
+      userStore.recordGame(player.userId, {
+        roomCode: party.roomCode,
+        playedAt,
+        opponents,
+        won: player.userId === party.winnerUserId,
+      });
+    }
   },
 
   advanceTurn(party: PartyState): void {

@@ -1,6 +1,11 @@
 <div class="screen">
   <div style="display: flex; justify-content: space-between; align-items: center;">
-    <div style="display: flex; align-items: center; gap: 12px;">
+    <button
+      type="button"
+      (click)="openMyProfile()"
+      style="display: flex; align-items: center; gap: 12px; background: none; border: none; padding: 0; cursor: pointer; text-align: left;"
+      [attr.aria-label]="'View your profile'"
+    >
       <kendo-avatar shape="circle" [border]="true" style="background: var(--primary); color: var(--on-primary); font-weight: 700;">
         {{ initials }}
       </kendo-avatar>
@@ -8,7 +13,7 @@
         <div class="headline-md">Hey, {{ auth.user?.displayName }}</div>
         <kendo-chip [label]="auth.user?.role ?? ''" [themeColor]="auth.user?.role === 'admin' ? 'info' : 'base'" [rounded]="'full'" size="small"></kendo-chip>
       </div>
-    </div>
+    </button>
     <button kendoButton [fillMode]="'outline'" (click)="logout()">Sign out</button>
   </div>
 
@@ -43,4 +48,105 @@
       </button>
     </kendo-card-body>
   </kendo-card>
+
+  @if (auth.user?.role === 'admin') {
+  <kendo-card [width]="'100%'">
+    <kendo-card-body style="display: flex; flex-direction: column; gap: 12px;">
+      <div>
+        <div class="headline-md">Manage players</div>
+        <p style="color: var(--on-surface-variant); font-size: 13px; margin: 4px 0 0;">
+          Only admins can add or remove player accounts.
+        </p>
+      </div>
+
+      @for (u of managedUsers(); track u.id) {
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--outline-variant);">
+        <div>
+          <div style="font-weight: 600;">{{ u.displayName }}</div>
+          <div style="font-size: 12px; color: var(--on-surface-variant);">{{ u.username }}</div>
+        </div>
+        @if (u.role === 'admin') {
+        <kendo-chip label="admin" size="small" [rounded]="'full'" [themeColor]="'info'" [fillMode]="'outline'"></kendo-chip>
+        } @else {
+        <button
+          kendoButton
+          [fillMode]="'flat'"
+          themeColor="error"
+          size="small"
+          [disabled]="managePlayersBusy()"
+          (click)="removePlayer(u.id)"
+        >
+          Delete
+        </button>
+        }
+      </div>
+      }
+
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px;">
+        <kendo-textbox [(ngModel)]="newDisplayName" placeholder="Display name"></kendo-textbox>
+        <kendo-textbox [(ngModel)]="newUsername" placeholder="Username"></kendo-textbox>
+        <kendo-textbox [(ngModel)]="newPassword" type="password" placeholder="Password (min 6 characters)"></kendo-textbox>
+        @if (managePlayersError()) {
+        <p class="error-text">{{ managePlayersError() }}</p>
+        }
+        <button kendoButton [fillMode]="'outline'" [disabled]="managePlayersBusy()" (click)="addPlayer()">
+          Add player
+        </button>
+      </div>
+    </kendo-card-body>
+  </kendo-card>
+  }
+
+  @if (profileLoading()) {
+  <kendo-dialog (close)="closeProfile()" [width]="360">
+    <div style="text-align: center; padding: 1.5rem 0;">
+      <kendo-loader size="medium" type="infinite-spinner"></kendo-loader>
+    </div>
+  </kendo-dialog>
+  } @else if (profile()) {
+  <kendo-dialog (close)="closeProfile()" [width]="380">
+    <div style="display: flex; flex-direction: column; gap: 16px; padding: 4px 0;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <kendo-avatar shape="circle" [border]="true" style="background: var(--primary); color: var(--on-primary); font-weight: 700;">
+          {{ profile()!.displayName.slice(0, 2).toUpperCase() }}
+        </kendo-avatar>
+        <div>
+          <div class="headline-md">{{ profile()!.displayName }}</div>
+          <div style="font-size: 13px; color: var(--on-surface-variant);">{{ profile()!.username }}</div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <div style="flex: 1; background: var(--surface-container-low); border-radius: 12px; padding: 10px 12px;">
+          <div style="font-size: 12px; color: var(--on-surface-variant);">Games played</div>
+          <div style="font-size: 22px; font-weight: 700;">{{ profile()!.gamesPlayed }}</div>
+        </div>
+        <div style="flex: 1; background: var(--surface-container-low); border-radius: 12px; padding: 10px 12px;">
+          <div style="font-size: 12px; color: var(--on-surface-variant);">Games won</div>
+          <div style="font-size: 22px; font-weight: 700;">{{ profile()!.gamesWon }}</div>
+        </div>
+      </div>
+
+      <div>
+        <p class="label-sm" style="margin-bottom: 6px;">Recent games</p>
+        @if (profile()!.games.length === 0) {
+        <p style="color: var(--on-surface-variant); font-size: 14px;">No games played yet.</p>
+        }
+        <div style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto;">
+          @for (g of profile()!.games; track g.playedAt) {
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-radius: 10px; background: var(--surface-container-low);">
+            <div>
+              <div style="font-size: 13px; font-weight: 600;">vs {{ g.opponents.join(', ') || 'nobody' }}</div>
+              <div style="font-size: 11px; color: var(--on-surface-variant);">{{ g.playedAt | date: 'medium' }} · Room {{ g.roomCode }}</div>
+            </div>
+            <kendo-chip [label]="g.won ? 'Won' : 'Lost'" size="small" [rounded]="'full'" [themeColor]="g.won ? 'success' : 'base'"></kendo-chip>
+          </div>
+          }
+        </div>
+      </div>
+
+      <button kendoButton [fillMode]="'outline'" (click)="closeProfile()">Close</button>
+    </div>
+  </kendo-dialog>
+  }
 </div>

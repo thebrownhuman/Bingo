@@ -5,8 +5,8 @@ npm-debug.log*
 # Server build output
 server/dist/
 
-# Server local user data (regenerate with `npm run seed`)
-server/src/db/users.json
+# Server local player data (one JSON file per player — regenerate with `npm run seed`)
+server/data/
 
 # Client build output (client/ has its own .gitignore too)
 client/dist/

@@ -3,6 +3,8 @@ import cors from 'cors';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { authRouter } from './auth/auth.routes';
+import { adminRouter } from './admin/admin.routes';
+import { playersRouter } from './players/players.routes';
 import { registerSocketHandlers } from './socket/socket';
 
 const PORT = Number(process.env.PORT) || 3000;
@@ -11,6 +13,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use('/api/auth', authRouter);
+app.use('/api/admin', adminRouter);
+app.use('/api/players', playersRouter);
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
 const httpServer = createServer(app);

@@ -12,10 +12,10 @@
   --outline: #777587;
   --outline-variant: #c7c4d8;
 
-  --primary: #412edc;
+  --primary: #ff3b30;
   --on-primary: #ffffff;
-  --primary-container: #5b4ef5;
-  --on-primary-container: #ece8ff;
+  --primary-container: #ff6961;
+  --on-primary-container: #7a0000;
 
   --secondary: #006c49;
   --on-secondary: #ffffff;
@@ -51,10 +51,10 @@
   --outline: #6b6b70;
   --outline-variant: #3a3a3c;
 
-  --primary: #6f61fa;
+  --primary: #ff453a;
   --on-primary: #ffffff;
-  --primary-container: #5b4ef5;
-  --on-primary-container: #ece8ff;
+  --primary-container: #ff6961;
+  --on-primary-container: #ffe8e6;
 
   --secondary: #10b981;
   --on-secondary: #ffffff;
@@ -156,11 +156,11 @@ h3 {
 .btn-primary {
   background: var(--primary);
   color: var(--on-primary);
-  box-shadow: 0 4px 0 #2c1ca8;
+  box-shadow: 0 4px 0 #b91c14;
 }
 
 .btn-primary:active:not(:disabled) {
-  box-shadow: 0 2px 0 #2c1ca8;
+  box-shadow: 0 2px 0 #b91c14;
 }
 
 .btn-secondary {
@@ -207,6 +207,32 @@ h3 {
 .error-text {
   color: var(--error);
   font-size: 13px;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  padding: 6px 4px;
+  margin: -6px -4px;
+  border-radius: 8px;
+  color: var(--on-surface-variant);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.back-link:hover {
+  background: var(--surface-container-low);
+  color: var(--on-surface);
+}
+
+.back-link svg {
+  flex-shrink: 0;
 }
 
 html {
@@ -271,6 +297,13 @@ kendo-card.k-card:hover {
 .k-textbox,
 .k-input {
   border-radius: 12px !important;
+}
+
+/* Mobile Safari/Chrome auto-zoom the page when a focused input's font-size
+   is under 16px. Kendo's default is 14px — force the real <input> element
+   (not just the wrapper) to 16px so tapping a field never triggers zoom. */
+.k-input-inner {
+  font-size: 16px !important;
 }
 
 .bingo-toast {
