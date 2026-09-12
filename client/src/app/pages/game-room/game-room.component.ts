@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LayoutModule } from '@progress/kendo-angular-layout';
@@ -10,13 +10,16 @@ import { AuthService } from '../../core/auth.service';
 import { SocketService } from '../../core/socket.service';
 import { BoardSetupComponent } from '../board-setup/board-setup.component';
 
+/** How often to tell the server we're still here. Server marks a player away after 6s of silence (HEARTBEAT_TIMEOUT_MS), so this still leaves room for a couple of missed beats before that happens. */
+const HEARTBEAT_INTERVAL_MS = 2_000;
+
 @Component({
   selector: 'app-game-room',
   standalone: true,
   imports: [CommonModule, BoardSetupComponent, LayoutModule, ButtonsModule, IndicatorsModule, DialogModule],
   templateUrl: './game-room.component.html',
 })
-export class GameRoomComponent implements OnInit {
+export class GameRoomComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private notification = inject(NotificationService);
@@ -37,6 +40,12 @@ export class GameRoomComponent implements OnInit {
   /** Player the host is about to kick, while the confirmation is open. */
   kickTarget = signal<{ userId: string; displayName: string } | null>(null);
 
+  private heartbeatTimer?: ReturnType<typeof setInterval>;
+  private handleVisibilityChange = () => {
+    if (document.visibilityState === 'visible') this.sendHeartbeat();
+  };
+  private handleFocus = () => this.sendHeartbeat();
+
   state = this.socket.state;
   /** Whoever created this specific room — controls starting the game and restarting after it ends. */
   isHost = computed(() => this.auth.user?.userId === this.state()?.adminUserId);
@@ -45,8 +54,17 @@ export class GameRoomComponent implements OnInit {
   currentTurnPlayer = computed(() => this.state()?.players.find((p) => p.userId === this.state()?.currentTurnUserId));
   readyCount = computed(() => this.state()?.players.filter((p) => p.ready).length ?? 0);
   allReady = computed(() => (this.state()?.players.length ?? 0) > 0 && this.readyCount() === this.state()?.players.length);
-  winner = computed(() => this.state()?.players.find((p) => p.userId === this.state()?.winnerUserId));
-  isWinnerMe = computed(() => this.winner()?.userId === this.auth.user?.userId);
+  winners = computed(() => {
+    const winnerIds = new Set(this.state()?.winnerUserIds ?? []);
+    return this.state()?.players.filter((p) => winnerIds.has(p.userId)) ?? [];
+  });
+  /** "Alka", "Alka & Dixit", or "Alka, Dixit & Suivant" for however many co-winners there are. */
+  winnerNames = computed(() => {
+    const names = this.winners().map((w) => w.displayName);
+    if (names.length <= 1) return names[0] ?? '';
+    return `${names.slice(0, -1).join(', ')} & ${names[names.length - 1]}`;
+  });
+  isWinnerMe = computed(() => this.winners().some((w) => w.userId === this.auth.user?.userId));
   hasQuit = computed(() => this.me()?.quit ?? false);
 
   ngOnInit(): void {
@@ -60,6 +78,31 @@ export class GameRoomComponent implements OnInit {
         }
       });
     }
+    this.startHeartbeat();
+  }
+
+  ngOnDestroy(): void {
+    if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
+    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+    window.removeEventListener('focus', this.handleFocus);
+  }
+
+  private sendHeartbeat(): void {
+    if (this.roomCode) this.socket.sendHeartbeat(this.roomCode);
+  }
+
+  /**
+   * Pings the server on an interval, plus immediately whenever the tab comes
+   * back to the foreground or the window regains focus — that's the case
+   * that matters most: the screen was off (or the tab backgrounded) for a
+   * while, and we want the server to see we're back right away instead of
+   * waiting for the next tick.
+   */
+  private startHeartbeat(): void {
+    this.sendHeartbeat();
+    this.heartbeatTimer = setInterval(() => this.sendHeartbeat(), HEARTBEAT_INTERVAL_MS);
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
+    window.addEventListener('focus', this.handleFocus);
   }
 
   isMarked(index: number): boolean {

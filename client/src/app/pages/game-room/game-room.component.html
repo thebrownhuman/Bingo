@@ -90,6 +90,9 @@
           <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 16px; font-weight: 600;">{{ p.displayName }}</span>
         </div>
         <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+          @if (!p.connected) {
+          <kendo-chip label="Away" size="small" [rounded]="'full'" themeColor="warning"></kendo-chip>
+          }
           <kendo-chip
             [label]="p.ready ? 'Ready' : 'Arranging…'"
             size="small"
@@ -166,6 +169,9 @@
             <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 16px; font-weight: 600;">{{ p.displayName }}</span>
           </div>
           <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+            @if (!p.connected) {
+            <kendo-chip label="Away" size="small" [rounded]="'full'" themeColor="warning"></kendo-chip>
+            }
             <kendo-chip
               [label]="p.ready ? 'Ready' : 'Arranging…'"
               size="small"
@@ -318,14 +324,18 @@
       <div class="headline-lg" [style.color]="isWinnerMe() ? 'var(--secondary)' : 'var(--primary)'">
         {{ isWinnerMe() ? 'You won bingo!' : 'Bingo!' }}
       </div>
-      <kendo-avatar
-        shape="circle"
-        size="large"
-        style="margin: 0 auto; background: var(--secondary); color: var(--on-secondary); font-weight: 800; font-size: 22px;"
-      >
-        {{ initialsOf(winner()?.displayName ?? '?') }}
-      </kendo-avatar>
-      <p style="font-size: 18px; margin: 0;">{{ winner()?.displayName }} completed 5 lines</p>
+      <div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;">
+        @for (w of winners(); track w.userId) {
+        <kendo-avatar
+          shape="circle"
+          size="large"
+          style="background: var(--secondary); color: var(--on-secondary); font-weight: 800; font-size: 22px;"
+        >
+          {{ initialsOf(w.displayName) }}
+        </kendo-avatar>
+        }
+      </div>
+      <p style="font-size: 18px; margin: 0;">{{ winnerNames() }} completed 5 lines</p>
 
       @if (isHost()) {
       <button kendoButton themeColor="primary" [rounded]="'large'" size="large" [disabled]="busy()" (click)="playAgain()">

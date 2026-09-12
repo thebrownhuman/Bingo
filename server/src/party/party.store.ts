@@ -23,7 +23,7 @@ export const partyStore = {
       turnOrder: [],
       currentTurnIndex: 0,
       calledNumbers: [],
-      winnerUserId: null,
+      winnerUserIds: [],
       createdAt: Date.now(),
     };
     parties.set(party.roomCode, party);
@@ -34,5 +34,8 @@ export const partyStore = {
   },
   remove(roomCode: string): void {
     parties.delete(roomCode.toUpperCase());
+  },
+  all(): PartyState[] {
+    return [...parties.values()];
   },
 };

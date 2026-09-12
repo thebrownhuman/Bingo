@@ -1,9 +1,12 @@
 import { Server, Socket } from 'socket.io';
 import { authService, TokenPayload } from '../auth/auth.service';
-import { gameEngine, GameError, MAX_PLAYERS } from '../game/game.engine';
+import { gameEngine, GameError, HEARTBEAT_TIMEOUT_MS, MAX_PLAYERS } from '../game/game.engine';
 import { partyStore } from '../party/party.store';
 import { sessionRegistry } from '../session/session.registry';
 import { PartyState } from '../types';
+
+/** How often to scan every party for players whose heartbeat has gone stale. Kept well under HEARTBEAT_TIMEOUT_MS so "away" shows up within about a second of actually going stale. */
+const PRESENCE_WATCHDOG_INTERVAL_MS = 1_000;
 
 interface AuthedSocket extends Socket {
   user?: TokenPayload;
@@ -27,6 +30,24 @@ function broadcastState(io: Server, party: PartyState) {
   }
 }
 
+/**
+ * Lets a client that just (re)connected — fresh login, page reload, whatever
+ * — find out it's still a live participant in a party that hasn't finished,
+ * so it can jump straight back into that room instead of landing on the
+ * lobby. "Live" means still in `players` and not `quit` (kicked-during-setup
+ * players are removed from `players` entirely, so they naturally don't
+ * qualify).
+ */
+function notifyIfResumable(socket: AuthedSocket, userId: string): void {
+  const activeParty = partyStore.all().find((party) => {
+    const player = party.players.get(userId);
+    return !!player && !player.quit && party.status !== 'finished';
+  });
+  if (activeParty) {
+    socket.emit('party:resume', { roomCode: activeParty.roomCode });
+  }
+}
+
 function socketsForUserInRoom(io: Server, room: string, userId: string): AuthedSocket[] {
   const socketsInRoom = io.sockets.adapter.rooms.get(room);
   if (!socketsInRoom) return [];
@@ -38,7 +59,37 @@ function socketsForUserInRoom(io: Server, room: string, userId: string): AuthedS
   return matches;
 }
 
+/**
+ * Backstop for the case a socket never fires "disconnect" in a timely way —
+ * a phone locking its screen, for instance, can leave the underlying
+ * connection half-open for a long time. Runs continuously so a stale player
+ * gets marked away (and eventually kicked, same as a real disconnect) even
+ * though no socket-level event ever told us they left.
+ */
+function startPresenceWatchdog(io: Server) {
+  setInterval(() => {
+    for (const party of partyStore.all()) {
+      if (party.status === 'finished') continue;
+      for (const player of party.players.values()) {
+        if (player.quit || !player.connected) continue;
+        if (Date.now() - player.lastSeenAt <= HEARTBEAT_TIMEOUT_MS) continue;
+
+        gameEngine.handleDisconnect(party.roomCode, player.userId, (resolvedParty) => broadcastState(io, resolvedParty));
+        if (player.userId === party.adminUserId) {
+          gameEngine.handleOwnerDisconnect(party.roomCode, () => {
+            io.to(roomOf(party.roomCode)).emit('party:closed');
+          });
+        }
+        broadcastState(io, party);
+      }
+    }
+  }, PRESENCE_WATCHDOG_INTERVAL_MS);
+}
+
 export function registerSocketHandlers(io: Server) {
+  startPresenceWatchdog(io);
+  gameEngine.onStateChange((party) => broadcastState(io, party));
+
   io.use((socket: AuthedSocket, next) => {
     const token = socket.handshake.auth?.token as string | undefined;
     if (!token) return next(new Error('Missing auth token.'));
@@ -61,6 +112,7 @@ export function registerSocketHandlers(io: Server) {
     } else {
       sessionRegistry.claim(user.userId, socket.id);
       socket.emit('session:ready');
+      notifyIfResumable(socket, user.userId);
     }
 
     socket.on('session:force_login', () => {
@@ -72,6 +124,7 @@ export function registerSocketHandlers(io: Server) {
       }
       sessionRegistry.claim(user.userId, socket.id);
       socket.emit('session:ready');
+      notifyIfResumable(socket, user.userId);
     });
 
     socket.on('party:create', (payload: { maxPlayers?: number }, ack) => {
@@ -144,6 +197,11 @@ export function registerSocketHandlers(io: Server) {
       } catch (err) {
         ack?.({ ok: false, error: (err as Error).message });
       }
+    });
+
+    socket.on('presence:ping', (payload: { roomCode: string }) => {
+      const party = gameEngine.heartbeat(payload.roomCode, user.userId);
+      if (party) broadcastState(io, party);
     });
 
     socket.on('game:call', (payload: { roomCode: string; number: number }, ack) => {

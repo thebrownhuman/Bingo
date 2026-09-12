@@ -23,7 +23,7 @@ export interface PublicPartyState {
   players: PublicPlayer[];
   currentTurnUserId: string | null;
   calledNumbers: number[];
-  winnerUserId: string | null;
+  winnerUserIds: string[];
   yourLayout: (number | null)[];
 }
 

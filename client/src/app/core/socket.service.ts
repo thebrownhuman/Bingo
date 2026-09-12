@@ -18,6 +18,8 @@ export class SocketService {
   readonly partyClosed = signal(false);
   /** The host removed this session from the party. */
   readonly kicked = signal(false);
+  /** Set when the server tells us this account is still a live participant in a party that hasn't finished — lets the app jump straight back into that room instead of the lobby. */
+  readonly resumeRoomCode = signal<string | null>(null);
 
   constructor(private auth: AuthService) {}
 
@@ -35,6 +37,7 @@ export class SocketService {
     this.sessionKicked.set(false);
     this.partyClosed.set(false);
     this.kicked.set(false);
+    this.resumeRoomCode.set(null);
     this.socket = io(window.location.origin, {
       path: SOCKET_IO_PATH,
       auth: { token: this.auth.token },
@@ -54,6 +57,12 @@ export class SocketService {
       this.kicked.set(true);
       this.state.set(null);
     });
+    this.socket.on('party:resume', (payload: { roomCode: string }) => this.resumeRoomCode.set(payload.roomCode));
+  }
+
+  /** Call once the resume redirect has been acted on, so it doesn't fire again for the same room. */
+  acknowledgeResume(): void {
+    this.resumeRoomCode.set(null);
   }
 
   /** Call after reacting to a `partyClosed` notification so it only fires once. */
@@ -83,6 +92,7 @@ export class SocketService {
     this.sessionKicked.set(false);
     this.partyClosed.set(false);
     this.kicked.set(false);
+    this.resumeRoomCode.set(null);
   }
 
   private emitWithAck<T extends Record<string, unknown>>(event: string, payload: T): Promise<SocketAck> {
@@ -137,5 +147,15 @@ export class SocketService {
 
   kickPlayer(roomCode: string, targetUserId: string) {
     return this.emitWithAck('party:kick', { roomCode, targetUserId });
+  }
+
+  /**
+   * No ack needed — this is fire-and-forget presence signalling, not a game
+   * action. Buffered by socket.io until the transport is actually connected,
+   * so it's safe to call right after a screen-off/on cycle before the
+   * underlying socket has finished reconnecting.
+   */
+  sendHeartbeat(roomCode: string): void {
+    this.socket?.emit('presence:ping', { roomCode });
   }
 }

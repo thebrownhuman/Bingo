@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { ButtonsModule } from '@progress/kendo-angular-buttons';
@@ -26,6 +26,19 @@ export class AppComponent {
   constructor() {
     this.router.events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe(() => {
       this.isLobbyRoute.set(this.router.url.startsWith('/lobby'));
+    });
+
+    // If we're still a live participant in a party that hasn't finished —
+    // fresh login, reconnect, reload on the lobby — jump straight into that
+    // room instead of leaving the player stuck on the lobby unaware their
+    // game is still running.
+    effect(() => {
+      const roomCode = this.socket.resumeRoomCode();
+      if (!roomCode) return;
+      this.socket.acknowledgeResume();
+      if (!this.router.url.startsWith(`/room/${roomCode}`)) {
+        this.router.navigate(['/room', roomCode]);
+      }
     });
   }
 

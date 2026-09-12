@@ -34,6 +34,8 @@ export interface PlayerState {
   connected: boolean;
   /** epoch ms when this player disconnected, used for the 30s grace timer */
   disconnectedAt: number | null;
+  /** epoch ms of the last heartbeat ping (or join/reconnect), used to detect a stale connection even when no socket "disconnect" event ever fires (e.g. a phone screen turning off without closing the socket) */
+  lastSeenAt: number;
   linesCompleted: number;
   /** Left the game early, by their own choice — counts as a loss and takes them out of the turn order. */
   quit: boolean;
@@ -49,7 +51,8 @@ export interface PartyState {
   turnOrder: string[];
   currentTurnIndex: number;
   calledNumbers: number[];
-  winnerUserId: string | null;
+  /** Every player who completed 5 lines on the same call is a co-winner. */
+  winnerUserIds: string[];
   createdAt: number;
 }
 
@@ -70,5 +73,5 @@ export interface PublicPartyState {
   players: PublicPlayer[];
   currentTurnUserId: string | null;
   calledNumbers: number[];
-  winnerUserId: string | null;
+  winnerUserIds: string[];
 }
