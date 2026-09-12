@@ -22,6 +22,15 @@
   }
 
   <div style="position: relative; text-align: center;">
+    @if (state()?.status === 'in_progress' && isHost()) {
+    <kendo-chip
+      [label]="(state()?.players?.length ?? 0) + ' players'"
+      [rounded]="'full'"
+      size="small"
+      style="position: absolute; top: 0; left: 0;"
+      (contentClick)="openPlayersDialog()"
+    ></kendo-chip>
+    }
     @if (state()?.status === 'in_progress' && !hasQuit()) {
     <button
       kendoButton
