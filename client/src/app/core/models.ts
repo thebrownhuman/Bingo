@@ -1,4 +1,9 @@
-export type Role = 'admin' | 'player';
+/**
+ * 'admin' can create/host parties and manage player accounts.
+ * 'super_admin' can do everything 'admin' can, plus sees the in-game admin
+ * view even when just playing in someone else's room, not just when hosting.
+ */
+export type Role = 'super_admin' | 'admin' | 'player';
 export type PartyStatus = 'setup' | 'in_progress' | 'finished';
 
 export interface PublicPlayer {
@@ -8,6 +13,7 @@ export interface PublicPlayer {
   ready: boolean;
   connected: boolean;
   linesCompleted: number;
+  quit: boolean;
 }
 
 export interface PublicPartyState {

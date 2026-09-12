@@ -1,4 +1,5 @@
 <div class="screen">
+  @if (state()?.status !== 'in_progress') {
   <div style="display: flex; align-items: center; justify-content: space-between;">
     <button
       type="button"
@@ -11,10 +12,30 @@
       </svg>
       <span>Lobby</span>
     </button>
-    <kendo-chip [label]="(state()?.players?.length ?? 0) + ' players'" [rounded]="'full'" size="small"></kendo-chip>
+    <kendo-chip
+      [label]="(state()?.players?.length ?? 0) + ' players'"
+      [rounded]="'full'"
+      size="small"
+      (contentClick)="openPlayersDialog()"
+    ></kendo-chip>
   </div>
+  }
 
-  <div style="text-align: center;">
+  <div style="position: relative; text-align: center;">
+    @if (state()?.status === 'in_progress' && !hasQuit()) {
+    <button
+      kendoButton
+      type="button"
+      [fillMode]="'outline'"
+      themeColor="error"
+      [rounded]="'small'"
+      style="position: absolute; top: 0; right: 0; width: 60px; height: 34px; padding: 0;"
+      [attr.aria-label]="'Quit game'"
+      (click)="openQuitConfirm()"
+    >
+      Quit
+    </button>
+    }
     <p class="label-sm">Room</p>
     <div class="headline-lg" style="color: var(--primary);">{{ roomCode }}</div>
   </div>
@@ -34,68 +55,226 @@
 
   <!-- SETUP PHASE -->
   @if (state()?.status === 'setup') {
+  @if (!me()?.ready) {
+  <app-board-setup
+    [readyCount]="readyCount()"
+    [totalPlayers]="state()!.players.length"
+    [initialLayout]="state()?.yourLayout ?? null"
+    (ready)="submitReady($event)"
+  />
+  } @else {
   <kendo-card [width]="'100%'">
     <kendo-card-body style="display: flex; flex-direction: column; gap: 4px;">
       <div class="headline-md" style="margin-bottom: 6px;">Players</div>
       @for (p of state()!.players; track p.userId) {
-      <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0;">
-        <div style="display: flex; align-items: center; gap: 10px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 14px 0; min-height: 64px;">
+        <div style="display: flex; align-items: center; gap: 10px; min-width: 0; flex-shrink: 1;">
           <kendo-avatar
             shape="circle"
             size="small"
-            [style.background]="p.role === 'admin' ? 'var(--primary)' : 'var(--surface-container-high)'"
-            [style.color]="p.role === 'admin' ? 'var(--on-primary)' : 'var(--on-surface)'"
-            style="font-weight: 700; font-size: 12px;"
+            [style.background]="p.role !== 'player' ? 'var(--primary)' : 'var(--surface-container-high)'"
+            [style.color]="p.role !== 'player' ? 'var(--on-primary)' : 'var(--on-surface)'"
+            style="font-weight: 700; font-size: 12px; flex-shrink: 0;"
           >
             {{ initialsOf(p.displayName) }}
           </kendo-avatar>
-          <span>{{ p.displayName }}</span>
-          @if (p.role === 'admin') {
-          <kendo-chip label="admin" size="small" [rounded]="'full'" [themeColor]="'info'" [fillMode]="'outline'"></kendo-chip>
+          <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 16px; font-weight: 600;">{{ p.displayName }}</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+          <kendo-chip
+            [label]="p.ready ? 'Ready' : 'Arranging…'"
+            size="small"
+            [rounded]="'full'"
+            [themeColor]="p.ready ? 'success' : 'base'"
+          ></kendo-chip>
+          @if (isHost() && p.userId !== auth.user?.userId) {
+          <button
+            kendoButton
+            [fillMode]="'flat'"
+            themeColor="error"
+            size="small"
+            [attr.aria-label]="'Kick ' + p.displayName"
+            (click)="openKickConfirm(p.userId, p.displayName)"
+          >
+            Kick
+          </button>
           }
         </div>
-        <kendo-chip
-          [label]="p.ready ? 'Ready' : 'Arranging…'"
-          size="small"
-          [rounded]="'full'"
-          [themeColor]="p.ready ? 'success' : 'base'"
-        ></kendo-chip>
       </div>
       }
     </kendo-card-body>
   </kendo-card>
 
-  @if (!me()?.ready) {
-  <app-board-setup [readyCount]="readyCount()" [totalPlayers]="state()!.players.length" (ready)="submitReady($event)" />
-  } @else {
   <kendo-card [width]="'100%'">
-    <kendo-card-body style="text-align: center;">
+    <kendo-card-body style="text-align: center; display: flex; flex-direction: column; gap: 10px;">
       <div class="headline-md">You're ready</div>
-      <p style="color: var(--on-surface-variant);">Waiting for everyone else…</p>
+      <p style="color: var(--on-surface-variant); margin: 0;">Waiting for everyone else…</p>
+      <button kendoButton [fillMode]="'outline'" [rounded]="'large'" (click)="openUnreadyConfirm()">
+        Not ready — go back
+      </button>
     </kendo-card-body>
   </kendo-card>
-  }
 
-  @if (isAdmin()) {
+  @if (isHost()) {
   <button kendoButton themeColor="primary" [rounded]="'large'" size="large" [disabled]="!allReady() || busy()" (click)="startGame()">
     {{ allReady() ? 'Start game' : 'Waiting for all players to be ready' }}
   </button>
   }
   }
+  }
+
+  <!-- Players popup — tap the "N players" chip to open. Keeps the arranging screen uncluttered. -->
+  @if (playersDialogOpen()) {
+  <kendo-dialog (close)="closePlayersDialog()" [width]="320">
+    <div [style.opacity]="closingPlayersDialog() ? 0.5 : 1">
+      <div style="position: relative; display: flex; align-items: center; justify-content: center; margin-bottom: 14px;">
+        <div class="headline-md" style="text-align: center;">Players</div>
+        <button
+          type="button"
+          class="dialog-close"
+          [attr.aria-label]="'Close'"
+          [disabled]="closingPlayersDialog()"
+          (click)="closePlayersDialog()"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        @for (p of state()?.players ?? []; track p.userId) {
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 14px 0; min-height: 64px;">
+          <div style="display: flex; align-items: center; gap: 10px; min-width: 0; flex-shrink: 1;">
+            <kendo-avatar
+              shape="circle"
+              size="small"
+              [style.background]="p.role !== 'player' ? 'var(--primary)' : 'var(--surface-container-high)'"
+              [style.color]="p.role !== 'player' ? 'var(--on-primary)' : 'var(--on-surface)'"
+              style="font-weight: 700; font-size: 12px; flex-shrink: 0;"
+            >
+              {{ initialsOf(p.displayName) }}
+            </kendo-avatar>
+            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 16px; font-weight: 600;">{{ p.displayName }}</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+            <kendo-chip
+              [label]="p.ready ? 'Ready' : 'Arranging…'"
+              size="small"
+              [rounded]="'full'"
+              [themeColor]="p.ready ? 'success' : 'base'"
+            ></kendo-chip>
+            @if (isHost() && p.userId !== auth.user?.userId) {
+            <button
+              kendoButton
+              [fillMode]="'flat'"
+              themeColor="error"
+              size="small"
+              [attr.aria-label]="'Kick ' + p.displayName"
+              (click)="openKickConfirm(p.userId, p.displayName)"
+            >
+              Kick
+            </button>
+            }
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+  </kendo-dialog>
+  }
+
+  <!-- Confirmation shown when a ready player wants to go back and rearrange. -->
+  @if (unreadyConfirmOpen()) {
+  <kendo-dialog [width]="340">
+    <div style="display: flex; flex-direction: column; gap: 14px; padding: 4px 0; text-align: center;">
+      <div class="headline-md">Go back and rearrange?</div>
+      <p style="color: var(--on-surface-variant); font-size: 14px; margin: 0;">
+        You'll be marked as not ready and can reshuffle your board.
+      </p>
+      <div style="display: flex; gap: 10px;">
+        <button kendoButton [fillMode]="'outline'" style="flex: 1;" [disabled]="busy()" (click)="keepReady()">
+          Stay ready
+        </button>
+        <button kendoButton themeColor="primary" style="flex: 1;" [disabled]="busy()" (click)="goBackToRearranging()">
+          Go back
+        </button>
+      </div>
+    </div>
+  </kendo-dialog>
+  }
+
+  <!-- Confirmation shown before quitting an in-progress game. -->
+  @if (quitConfirmOpen()) {
+  <kendo-dialog [width]="340">
+    <div style="display: flex; flex-direction: column; gap: 14px; padding: 4px 0; text-align: center;">
+      <div class="headline-md">Are you sure you want to quit?</div>
+      <p style="color: var(--on-surface-variant); font-size: 14px; margin: 0;">
+        You'll count as having lost this game. Everyone else keeps playing without you.
+      </p>
+      <div style="display: flex; gap: 10px;">
+        <button kendoButton [fillMode]="'outline'" style="flex: 1;" [disabled]="busy()" (click)="cancelQuit()">
+          Continue game
+        </button>
+        <button kendoButton themeColor="error" style="flex: 1;" [disabled]="busy()" (click)="confirmQuit()">
+          Quit game
+        </button>
+      </div>
+    </div>
+  </kendo-dialog>
+  }
+
+  <!-- Confirmation shown before the host kicks another player. -->
+  @if (kickTarget()) {
+  <kendo-dialog [width]="340">
+    <div style="display: flex; flex-direction: column; gap: 14px; padding: 4px 0; text-align: center;">
+      <div class="headline-md">Remove {{ kickTarget()?.displayName }}?</div>
+      <p style="color: var(--on-surface-variant); font-size: 14px; margin: 0;">
+        @if (state()?.status === 'in_progress') {
+        They'll count as having lost this game, just like quitting themselves. Everyone else keeps playing.
+        } @else {
+        They'll be removed from this party.
+        }
+      </p>
+      <div style="display: flex; gap: 10px;">
+        <button kendoButton [fillMode]="'outline'" style="flex: 1;" [disabled]="busy()" (click)="cancelKick()">
+          Cancel
+        </button>
+        <button kendoButton themeColor="error" style="flex: 1;" [disabled]="busy()" (click)="confirmKick()">
+          Remove
+        </button>
+      </div>
+    </div>
+  </kendo-dialog>
+  }
 
   <!-- IN PROGRESS -->
   @if (state()?.status === 'in_progress') {
-  <kendo-card
-    [width]="'100%'"
-    [style.background]="isMyTurn() ? 'var(--primary-container)' : 'var(--surface-container-lowest)'"
-    [style.color]="isMyTurn() ? 'var(--on-primary)' : 'var(--on-surface)'"
-  >
-    <kendo-card-body>
-      @if (isMyTurn()) {
-      <div class="headline-md">Your turn to call a number!</div>
-      } @else {
-      <div class="headline-md">Waiting on {{ currentTurnPlayer()?.displayName }}</div>
-      }
+  <kendo-card [width]="'100%'" style="background: transparent; box-shadow: none; border-color: transparent;">
+    <kendo-card-body style="text-align: center;">
+      <div class="headline-md" [style.color]="isMyTurn() ? 'var(--on-primary)' : 'var(--primary)'">
+        Turn: {{ isMyTurn() ? 'You' : currentTurnPlayer()?.displayName }}
+      </div>
+    </kendo-card-body>
+  </kendo-card>
+
+  <kendo-card [width]="'100%'">
+    <kendo-card-body style="padding: 8px; background: var(--surface-container-low); border-radius: var(--radius-lg);">
+      <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;">
+        @for (n of state()!.yourLayout; track $index) {
+        <button
+          #cellButton
+          kendoButton
+          type="button"
+          themeColor="primary"
+          [fillMode]="isMarked($index) ? 'solid' : 'outline'"
+          [disabled]="!isMarked($index) && (!isMyTurn() || busy())"
+          (click)="callFromGrid($index); cellButton.blur()"
+          style="aspect-ratio: 1; padding: 0; font-weight: 800; font-size: 18px; justify-content: center;"
+        >
+          {{ n }}
+        </button>
+        }
+      </div>
     </kendo-card-body>
   </kendo-card>
 
@@ -106,74 +285,53 @@
           <span class="label-sm">Lines completed</span>
           <span style="font-size: 13px; font-weight: 600;">{{ me()?.linesCompleted ?? 0 }} / 5</span>
         </div>
-        <kendo-progressbar [value]="me()?.linesCompleted ?? 0" [max]="5" [label]="{ visible: false }" [animation]="true"></kendo-progressbar>
+        <div class="bar-track">
+          <div class="bar-fill" [style.width.%]="((me()?.linesCompleted ?? 0) / 5) * 100"></div>
+        </div>
       </div>
       <div>
         <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
           <span class="label-sm">Numbers called</span>
           <span style="font-size: 13px; font-weight: 600;">{{ state()!.calledNumbers.length }} / 25</span>
         </div>
-        <kendo-progressbar [value]="state()!.calledNumbers.length" [max]="25" [label]="{ visible: false }" [animation]="true"></kendo-progressbar>
+        <div class="bar-track">
+          <div class="bar-fill" [style.width.%]="(state()!.calledNumbers.length / 25) * 100"></div>
+        </div>
       </div>
     </kendo-card-body>
   </kendo-card>
 
-  <kendo-card [width]="'100%'">
-    <kendo-card-body style="display: flex; flex-direction: column; gap: 8px;">
-      <p class="label-sm">Called so far</p>
-      <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-        @for (n of state()!.calledNumbers; track n) {
-        <kendo-chip [label]="n.toString()" size="small" [rounded]="'full'"></kendo-chip>
-        }
-      </div>
-    </kendo-card-body>
-  </kendo-card>
-
-  <kendo-card [width]="'100%'">
-    <kendo-card-body style="padding: 8px; background: var(--surface-container-low); border-radius: var(--radius-lg);">
-      <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;">
-        @for (n of state()!.yourLayout; track $index) {
-        <button
-          kendoButton
-          type="button"
-          [themeColor]="isMarked($index) ? 'success' : 'base'"
-          [fillMode]="isMarked($index) ? 'solid' : 'outline'"
-          style="aspect-ratio: 1; padding: 0; font-weight: 800; font-size: 18px; justify-content: center; pointer-events: none;"
-        >
-          {{ n }}
-        </button>
-        }
-      </div>
-    </kendo-card-body>
-  </kendo-card>
-
-  @if (isMyTurn()) {
-  <kendo-card [width]="'100%'">
-    <kendo-card-body style="display: flex; flex-direction: column; gap: 10px;">
-      <div class="headline-md">Call next number</div>
-      <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-        @for (n of availableNumbers(); track n) {
-        <kendo-chip [label]="n.toString()" [rounded]="'full'" [themeColor]="'info'" [fillMode]="'outline'" [disabled]="busy()" (contentClick)="callNumber(n)"></kendo-chip>
-        }
-      </div>
-    </kendo-card-body>
-  </kendo-card>
-  }
-
-  @if (isAdmin()) {
+  @if (isSuperAdmin() || isHost()) {
   <kendo-card [width]="'100%'">
     <kendo-card-body style="display: flex; flex-direction: column; gap: 6px;">
       <p class="label-sm">Admin view — turn order &amp; progress</p>
       @for (p of state()!.players; track p.userId) {
-      <div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 0;">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <kendo-avatar shape="circle" size="small" style="font-size: 11px; font-weight: 700;">{{ initialsOf(p.displayName) }}</kendo-avatar>
-          <span>{{ p.displayName }}</span>
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 0;">
+        <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+          <kendo-avatar shape="circle" size="small" style="font-size: 11px; font-weight: 700; flex-shrink: 0;">{{ initialsOf(p.displayName) }}</kendo-avatar>
+          <span style="font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ p.displayName }}</span>
           @if (p.userId === state()!.currentTurnUserId) {
           <kendo-chip label="turn" size="small" [rounded]="'full'" [themeColor]="'info'"></kendo-chip>
           }
+          @if (p.quit) {
+          <kendo-chip label="left" size="small" [rounded]="'full'"></kendo-chip>
+          }
         </div>
-        <span class="label-sm">{{ p.linesCompleted }}/5 lines</span>
+        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+          <span class="label-sm">{{ p.linesCompleted }}/5 lines</span>
+          @if (isHost() && !p.quit && p.userId !== auth.user?.userId) {
+          <button
+            kendoButton
+            [fillMode]="'flat'"
+            themeColor="error"
+            size="small"
+            [attr.aria-label]="'Kick ' + p.displayName"
+            (click)="openKickConfirm(p.userId, p.displayName)"
+          >
+            Kick
+          </button>
+          }
+        </div>
       </div>
       }
     </kendo-card-body>
@@ -196,7 +354,18 @@
         {{ initialsOf(winner()?.displayName ?? '?') }}
       </kendo-avatar>
       <p style="font-size: 18px; margin: 0;">{{ winner()?.displayName }} completed 5 lines</p>
-      <button kendoButton themeColor="primary" [rounded]="'large'" size="large" (click)="backToLobby()">Back to lobby</button>
+
+      @if (isHost()) {
+      <button kendoButton themeColor="primary" [rounded]="'large'" size="large" [disabled]="busy()" (click)="playAgain()">
+        Play again
+      </button>
+      } @else {
+      <p style="color: var(--on-surface-variant); font-size: 13px; margin: 0;">
+        Waiting for the host to start a new game…
+      </p>
+      }
+
+      <button kendoButton [fillMode]="'outline'" [rounded]="'large'" size="large" (click)="backToLobby()">Back to lobby</button>
     </div>
   </kendo-dialog>
   }

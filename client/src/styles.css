@@ -73,11 +73,65 @@ html,
 body {
   margin: 0;
   padding: 0;
-  min-height: 100%;
+  /* The page itself is pinned to exactly one viewport and never scrolls —
+     see .screen below for why. */
+  height: 100%;
+  overflow: hidden;
   background: radial-gradient(1200px circle at 50% -10%, var(--surface-container-low), var(--surface) 60%);
   background-attachment: fixed;
   color: var(--on-surface);
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  /* Kills the mobile pull-to-refresh / rubber-band bounce so dragging near the
+     top or bottom of the screen doesn't also drag the whole page with it. */
+  overscroll-behavior: none;
+  /* Mobile Chrome/Safari show a translucent tap-highlight flash on ANY
+     element you touch, interactive or not — including plain cards like the
+     lines/numbers-called panel, which just looks like an unwanted white
+     outline appearing on tap. Kill it globally instead of chasing it on
+     every element. */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* The board-arranging grid: a 5x5 Kendo Sortable used for drag-to-swap cells.
+   Its items must not also trigger the browser's own touch-scroll gesture. */
+kendo-sortable.board-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+kendo-sortable.board-grid [data-sortable-item] {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Kendo renders a floating "hint" clone of the dragged cell that follows the
+   finger/cursor. On touch it isn't sized to match a grid cell, so it shows up
+   as a stray, misaligned duplicate number overlapping the real cells. We
+   highlight the source/target cells ourselves instead, so the hint clone is
+   just visual noise here — hide it. It's the only direct child of
+   kendo-sortable that isn't one of the real 25 cells. */
+kendo-sortable.board-grid > div:not([data-sortable-item]) {
+  display: none !important;
+}
+
+/* Plain CSS progress bar — Kendo's own kendo-progressbar wasn't rendering
+   its fill (the value segment stayed invisible even at a non-zero value),
+   so these are drawn directly instead of relying on its internal CSS
+   variables/animation. */
+.bar-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-container-high);
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--primary);
+  transition: width 0.3s ease;
 }
 
 button,
@@ -88,9 +142,21 @@ input {
 .screen {
   max-width: 440px;
   margin: 0 auto;
-  min-height: 100vh;
+  /* html/body are pinned to exactly one viewport and don't scroll (see
+     above) — .screen is the actual scroll container instead, and it's sized
+     to exactly the viewport too. That means its scrollable range is driven
+     purely by its own real content height, so there's never a phantom
+     "extra page" of empty space below the last card to scroll into. 100dvh
+     tracks the real visible viewport on mobile (100vh is measured against
+     the browser's largest possible viewport, address bar hidden, which
+     would leave a gap while the bar is showing); vh is the fallback for
+     browsers without dvh support. */
+  height: 100vh;
+  height: 100dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   padding: 1rem;
-  padding-bottom: 3rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -265,6 +331,62 @@ kendo-card.k-card:hover {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), 0 12px 32px rgba(0, 0, 0, 0.12);
 }
 
+/* Kendo's dialog defaults to square corners and a solid-primary titlebar —
+   round it to match our cards, and drop the titlebar since we build our own
+   plain heading + close button instead of using the [title] input. */
+.k-window.k-dialog {
+  border-radius: 20px !important;
+  overflow: hidden;
+  border: 1px solid var(--outline-variant);
+  background: var(--surface-container-lowest);
+  color: var(--on-surface);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+.k-window-content.k-dialog-content {
+  padding: 20px;
+}
+
+.dialog-close {
+  appearance: none;
+  -webkit-appearance: none;
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--on-surface-variant);
+  cursor: pointer;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.dialog-close svg {
+  display: block;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.dialog-close:disabled {
+  cursor: default;
+  pointer-events: none;
+}
+
+.dialog-close:hover {
+  background: var(--surface-container-high);
+  color: var(--on-surface);
+}
+
 :root[data-theme='dark'] kendo-card.k-card:hover {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35), 0 12px 36px rgba(0, 0, 0, 0.55);
 }
@@ -286,8 +408,41 @@ kendo-card.k-card:hover {
   transform: translateY(0);
 }
 
+kendo-chip,
 .k-chip {
   border-radius: 999px !important;
+  flex-shrink: 0;
+}
+
+/* Kendo's "small" chip preset is tiny (~20px tall) — too small to read
+   comfortably, so bump it up closer to "medium" everywhere it's used. */
+.k-chip-sm {
+  padding: 6px 14px !important;
+  font-size: 14px !important;
+  line-height: 1.2 !important;
+  min-height: 30px;
+}
+
+.k-chip .k-chip-label {
+  white-space: nowrap;
+}
+
+/*
+ * Kendo's compiled "base" chip fill is a near-black tint of the theme's base
+ * color — in our dark theme that resolves to #141414 against a #121212 page,
+ * so the pill is essentially invisible and the label looks like unstyled
+ * floating text. Use our own surface tokens instead, which already flip
+ * correctly between light/dark via :root[data-theme].
+ */
+.k-chip-solid-base {
+  background-color: var(--surface-container-high) !important;
+  color: var(--on-surface) !important;
+  border-color: var(--outline-variant) !important;
+}
+
+.k-chip-solid-base:hover,
+.k-chip-solid-base.k-hover {
+  background-color: var(--surface-container-highest) !important;
 }
 
 .k-chip:hover {
@@ -306,7 +461,36 @@ kendo-card.k-card:hover {
   font-size: 16px !important;
 }
 
+/* Kendo pins its notification container flush to the screen edge (top: 0) and
+   renders it in the theme's raw info/success/error colors — that's what was
+   colliding with the "Room / CODE" header and looking out of place against
+   our dark UI. Push it below that header instead of covering it, and reskin
+   it to match our own cards, keeping a colored left edge as the only nod to
+   the notification type. */
+.k-notification-container {
+  margin: 96px 16px 16px !important;
+}
+
 .bingo-toast {
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   font-weight: 600;
+  border-radius: var(--radius-lg) !important;
+  background: var(--surface-container-lowest) !important;
+  color: var(--on-surface) !important;
+  border: 1px solid var(--outline-variant) !important;
+  border-left-width: 3px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
+  padding: 10px 16px !important;
+}
+
+.bingo-toast.k-notification-info {
+  border-left-color: var(--primary) !important;
+}
+
+.bingo-toast.k-notification-success {
+  border-left-color: var(--secondary) !important;
+}
+
+.bingo-toast.k-notification-error {
+  border-left-color: var(--error) !important;
 }

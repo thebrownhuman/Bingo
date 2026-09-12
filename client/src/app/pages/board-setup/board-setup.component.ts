@@ -1,10 +1,9 @@
-import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LayoutModule } from '@progress/kendo-angular-layout';
 import { ButtonsModule } from '@progress/kendo-angular-buttons';
 import { ProgressBarModule } from '@progress/kendo-angular-progressbar';
-
-type Selection = { kind: 'tray'; number: number } | { kind: 'cell'; index: number } | null;
+import { DataMoveEvent, DragEndEvent, DragOverEvent, DragStartEvent, SortableModule } from '@progress/kendo-angular-sortable';
 
 function shuffle<T>(items: T[]): T[] {
   const result = [...items];
@@ -15,104 +14,81 @@ function shuffle<T>(items: T[]): T[] {
   return result;
 }
 
+function randomFullLayout(): number[] {
+  return shuffle(Array.from({ length: 25 }, (_, i) => i + 1));
+}
+
 @Component({
   selector: 'app-board-setup',
   standalone: true,
-  imports: [CommonModule, LayoutModule, ButtonsModule, ProgressBarModule],
+  imports: [CommonModule, LayoutModule, ButtonsModule, ProgressBarModule, SortableModule],
   templateUrl: './board-setup.component.html',
 })
-export class BoardSetupComponent {
+export class BoardSetupComponent implements OnInit {
   @Input() readyCount = 0;
   @Input() totalPlayers = 0;
+  /** Restores a previously-submitted board (e.g. after going back from "ready") instead of starting blank. */
+  @Input() initialLayout: (number | null)[] | null = null;
   @Output() ready = new EventEmitter<(number | null)[]>();
 
-  cells = signal<(number | null)[]>(Array.from({ length: 25 }, () => null));
-  tray = signal<number[]>(Array.from({ length: 25 }, (_, i) => i + 1));
-  selection = signal<Selection>(null);
+  cells = signal<number[]>(randomFullLayout());
+  /** Index currently being dragged, and the index it's hovering over — both get highlighted so the swap is unambiguous. */
+  dragSourceIndex = signal<number | null>(null);
+  dragOverIndex = signal<number | null>(null);
 
-  get isFull(): boolean {
-    return this.cells().every((c) => c !== null);
-  }
-
-  isCellSelected(index: number): boolean {
-    const s = this.selection();
-    return s?.kind === 'cell' && s.index === index;
-  }
-
-  isTraySelected(number: number): boolean {
-    const s = this.selection();
-    return s?.kind === 'tray' && s.number === number;
+  ngOnInit(): void {
+    if (this.initialLayout?.every((n): n is number => n !== null)) {
+      this.cells.set([...this.initialLayout]);
+    }
   }
 
   randomize(): void {
-    this.cells.set(shuffle(Array.from({ length: 25 }, (_, i) => i + 1)));
-    this.tray.set([]);
-    this.selection.set(null);
+    this.cells.set(randomFullLayout());
   }
 
-  selectTray(number: number): void {
-    const current = this.selection();
-    if (current?.kind === 'tray' && current.number === number) {
-      this.selection.set(null);
-      return;
+  /**
+   * Kendo's Sortable fires `dataMove` on every cell you pass over mid-drag
+   * (not just the final drop) and its default behavior is a list-reorder —
+   * shifting every item in between. Neither fits a swap-two-cells board, so
+   * every one of these is cancelled; the actual swap happens once, in
+   * `onDragEnd`, between the drag's start and end positions.
+   */
+  onDataMove(event: DataMoveEvent): void {
+    event.preventDefault();
+  }
+
+  onDragStart(event: DragStartEvent): void {
+    this.dragSourceIndex.set(event.index);
+  }
+
+  onDragOver(event: DragOverEvent): void {
+    this.dragOverIndex.set(event.index);
+  }
+
+  onDragLeave(): void {
+    this.dragOverIndex.set(null);
+  }
+
+  onDragEnd(event: DragEndEvent): void {
+    const from = this.dragSourceIndex();
+    const to = event.index;
+    if (from !== null && to >= 0 && to !== from) {
+      const cells = [...this.cells()];
+      const temp = cells[from];
+      cells[from] = cells[to];
+      cells[to] = temp;
+      this.cells.set(cells);
     }
-    this.selection.set({ kind: 'tray', number });
-  }
-
-  selectCell(index: number): void {
-    const current = this.selection();
-    const cellValue = this.cells()[index];
-
-    if (!current) {
-      if (cellValue !== null) this.selection.set({ kind: 'cell', index });
-      return;
-    }
-
-    if (current.kind === 'tray') {
-      this.placeFromTray(current.number, index);
-      return;
-    }
-
-    if (current.kind === 'cell') {
-      if (current.index === index) {
-        this.selection.set(null);
-        return;
-      }
-      this.swapCells(current.index, index);
-    }
-  }
-
-  private placeFromTray(number: number, targetIndex: number): void {
-    const cells = [...this.cells()];
-    const bumped = cells[targetIndex];
-    cells[targetIndex] = number;
-    this.cells.set(cells);
-
-    const tray = this.tray().filter((n) => n !== number);
-    if (bumped !== null) tray.push(bumped);
-    this.tray.set(tray);
-    this.selection.set(null);
-  }
-
-  private swapCells(a: number, b: number): void {
-    const cells = [...this.cells()];
-    [cells[a], cells[b]] = [cells[b], cells[a]];
-    this.cells.set(cells);
-    this.selection.set(null);
-  }
-
-  returnToTray(index: number): void {
-    const cells = [...this.cells()];
-    const value = cells[index];
-    if (value === null) return;
-    cells[index] = null;
-    this.cells.set(cells);
-    this.tray.set([...this.tray(), value]);
-    this.selection.set(null);
+    this.dragSourceIndex.set(null);
+    this.dragOverIndex.set(null);
   }
 
   confirmReady(): void {
-    if (!this.isFull) return;
     this.ready.emit(this.cells());
+  }
+
+  /** Lets the button show its normal pressed/focus feedback briefly, then clears it, instead of it staying stuck until the next tap elsewhere. */
+  blurAfterDelay(el: EventTarget | null, delay = 200): void {
+    setTimeout(() => (el as HTMLElement)?.blur(), delay);
   }
 }

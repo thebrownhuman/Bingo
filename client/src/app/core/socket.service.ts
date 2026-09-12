@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 import { AuthService } from './auth.service';
-import { serverUrl } from './server.config';
+import { SOCKET_IO_PATH } from './server.config';
 import { PublicPartyState, SocketAck } from './models';
 
 @Injectable({ providedIn: 'root' })
@@ -14,6 +14,10 @@ export class SocketService {
   readonly sessionConflict = signal(false);
   /** This session got kicked because the account logged in elsewhere. */
   readonly sessionKicked = signal(false);
+  /** The party's host disconnected and the room was torn down. */
+  readonly partyClosed = signal(false);
+  /** The host removed this session from the party. */
+  readonly kicked = signal(false);
 
   constructor(private auth: AuthService) {}
 
@@ -29,13 +33,37 @@ export class SocketService {
     this.connectedToken = this.auth.token;
     this.sessionConflict.set(false);
     this.sessionKicked.set(false);
-    this.socket = io(serverUrl(), { auth: { token: this.auth.token }, transports: ['websocket'] });
+    this.partyClosed.set(false);
+    this.kicked.set(false);
+    this.socket = io(window.location.origin, {
+      path: SOCKET_IO_PATH,
+      auth: { token: this.auth.token },
+      transports: ['websocket'],
+    });
     this.socket.on('connect', () => this.connected.set(true));
     this.socket.on('disconnect', () => this.connected.set(false));
     this.socket.on('state', (state: PublicPartyState) => this.state.set(state));
     this.socket.on('session:conflict', () => this.sessionConflict.set(true));
     this.socket.on('session:ready', () => this.sessionConflict.set(false));
     this.socket.on('session:kicked', () => this.sessionKicked.set(true));
+    this.socket.on('party:closed', () => {
+      this.partyClosed.set(true);
+      this.state.set(null);
+    });
+    this.socket.on('party:kicked', () => {
+      this.kicked.set(true);
+      this.state.set(null);
+    });
+  }
+
+  /** Call after reacting to a `partyClosed` notification so it only fires once. */
+  acknowledgePartyClosed(): void {
+    this.partyClosed.set(false);
+  }
+
+  /** Call after reacting to a `kicked` notification so it only fires once. */
+  acknowledgeKickedFromParty(): void {
+    this.kicked.set(false);
   }
 
   /** Kicks the other active session for this account and takes over as the active one. */
@@ -49,6 +77,12 @@ export class SocketService {
     this.connectedToken = null;
     this.state.set(null);
     this.connected.set(false);
+    // Otherwise these dialogs (rendered globally in app root) keep blocking
+    // the screen forever after logout/login, since nothing else clears them.
+    this.sessionConflict.set(false);
+    this.sessionKicked.set(false);
+    this.partyClosed.set(false);
+    this.kicked.set(false);
   }
 
   private emitWithAck<T extends Record<string, unknown>>(event: string, payload: T): Promise<SocketAck> {
@@ -81,11 +115,27 @@ export class SocketService {
     return this.emitWithAck('board:ready', { roomCode });
   }
 
+  setNotReady(roomCode: string) {
+    return this.emitWithAck('board:unready', { roomCode });
+  }
+
   startGame(roomCode: string) {
     return this.emitWithAck('game:start', { roomCode });
   }
 
   callNumber(roomCode: string, number: number) {
     return this.emitWithAck('game:call', { roomCode, number });
+  }
+
+  restartGame(roomCode: string) {
+    return this.emitWithAck('game:restart', { roomCode });
+  }
+
+  quitGame(roomCode: string) {
+    return this.emitWithAck('game:quit', { roomCode });
+  }
+
+  kickPlayer(roomCode: string, targetUserId: string) {
+    return this.emitWithAck('party:kick', { roomCode, targetUserId });
   }
 }

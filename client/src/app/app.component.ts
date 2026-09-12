@@ -1,5 +1,6 @@
-import { Component, inject } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
+import { Component, inject, signal } from '@angular/core';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { ButtonsModule } from '@progress/kendo-angular-buttons';
 import { DialogModule } from '@progress/kendo-angular-dialog';
 import { ThemeService } from './core/theme.service';
@@ -19,6 +20,15 @@ export class AppComponent {
   private auth = inject(AuthService);
   private router = inject(Router);
 
+  /** The theme toggle only makes sense on the home screen — hide it once you're in a party/room. */
+  isLobbyRoute = signal(this.router.url.startsWith('/lobby'));
+
+  constructor() {
+    this.router.events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe(() => {
+      this.isLobbyRoute.set(this.router.url.startsWith('/lobby'));
+    });
+  }
+
   declineTakeover(): void {
     this.socket.disconnect();
     this.auth.logout();
@@ -29,9 +39,19 @@ export class AppComponent {
     this.socket.takeOverSession();
   }
 
-  acknowledgeKicked(): void {
+  acknowledgeSessionKicked(): void {
     this.socket.disconnect();
     this.auth.logout();
     this.router.navigate(['/login']);
+  }
+
+  acknowledgePartyClosed(): void {
+    this.socket.acknowledgePartyClosed();
+    this.router.navigate(['/lobby']);
+  }
+
+  acknowledgeKickedFromParty(): void {
+    this.socket.acknowledgeKickedFromParty();
+    this.router.navigate(['/lobby']);
   }
 }

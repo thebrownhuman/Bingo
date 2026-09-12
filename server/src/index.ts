@@ -18,7 +18,9 @@ app.use('/api/players', playersRouter);
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
 const httpServer = createServer(app);
-const io = new Server(httpServer, { cors: { origin: '*' } });
+// Path matches the reverse proxy's route so requests behind /bingo (LAN nginx
+// container and the public Cloudflare deploy alike) reach this same endpoint.
+const io = new Server(httpServer, { cors: { origin: '*' }, path: '/bingo/socket.io' });
 registerSocketHandlers(io);
 
 // Bind to 0.0.0.0 (not just localhost) so other devices on the same LAN can reach this server.

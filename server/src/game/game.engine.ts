@@ -8,6 +8,7 @@ export const MIN_PLAYERS = 2;
 export const MAX_PLAYERS = 7;
 
 const disconnectTimers = new Map<string, NodeJS.Timeout>(); // key: `${roomCode}:${userId}`
+const ownerDisconnectTimers = new Map<string, NodeJS.Timeout>(); // key: roomCode
 
 export class GameError extends Error {}
 
@@ -20,10 +21,15 @@ function emptyLayout(): (number | null)[] {
 }
 
 export const gameEngine = {
-  createParty(adminUserId: string, adminDisplayName: string, maxPlayers: number = MAX_PLAYERS): PartyState {
+  createParty(
+    adminUserId: string,
+    adminDisplayName: string,
+    adminRole: Role,
+    maxPlayers: number = MAX_PLAYERS
+  ): PartyState {
     const clamped = Math.min(Math.max(maxPlayers, MIN_PLAYERS), MAX_PLAYERS);
     const party = partyStore.create(adminUserId, clamped);
-    this.joinParty(party.roomCode, adminUserId, adminDisplayName, 'admin');
+    this.joinParty(party.roomCode, adminUserId, adminDisplayName, adminRole);
     return party;
   },
 
@@ -38,6 +44,7 @@ export const gameEngine = {
       existing.connected = true;
       existing.disconnectedAt = null;
       this.clearDisconnectTimer(roomCode, userId);
+      if (userId === party.adminUserId) this.clearOwnerDisconnectTimer(roomCode);
       return party;
     }
     if (party.players.size >= party.maxPlayers) {
@@ -52,6 +59,7 @@ export const gameEngine = {
       connected: true,
       disconnectedAt: null,
       linesCompleted: 0,
+      quit: false,
     };
     party.players.set(userId, player);
     return party;
@@ -88,6 +96,15 @@ export const gameEngine = {
     return party;
   },
 
+  /** Lets a player back out of "ready" to rearrange their board before the game starts. */
+  unsetReady(roomCode: string, userId: string): PartyState {
+    const party = this.requireParty(roomCode);
+    const player = this.requirePlayer(party, userId);
+    if (party.status !== 'setup') throw new GameError('The game has already started.');
+    player.ready = false;
+    return party;
+  },
+
   startGame(roomCode: string, requesterUserId: string): PartyState {
     const party = this.requireParty(roomCode);
     if (party.adminUserId !== requesterUserId) throw new GameError('Only the admin can start the game.');
@@ -98,6 +115,26 @@ export const gameEngine = {
     party.turnOrder = shuffle([...party.players.keys()]);
     party.currentTurnIndex = 0;
     party.status = 'in_progress';
+    return party;
+  },
+
+  /** Resets a finished game back to setup so the same party/room can play another round. */
+  restartGame(roomCode: string, requesterUserId: string): PartyState {
+    const party = this.requireParty(roomCode);
+    if (party.status !== 'finished') throw new GameError('Game is not finished yet.');
+    if (party.adminUserId !== requesterUserId) throw new GameError('Only the admin can start a new game.');
+
+    party.status = 'setup';
+    party.turnOrder = [];
+    party.currentTurnIndex = 0;
+    party.calledNumbers = [];
+    party.winnerUserId = null;
+    for (const player of party.players.values()) {
+      player.layout = emptyLayout();
+      player.ready = false;
+      player.linesCompleted = 0;
+      player.quit = false;
+    }
     return party;
   },
 
@@ -114,13 +151,92 @@ export const gameEngine = {
     return party;
   },
 
+  /**
+   * Leaves a game in progress by choice. The player stays visible in the
+   * room (their board and history up to this point are kept) but drops out
+   * of the turn order and is recorded as a loss immediately — quitting
+   * doesn't wait on how the game eventually ends for whoever's left.
+   */
+  quitGame(roomCode: string, userId: string): PartyState {
+    const party = this.requireParty(roomCode);
+    if (party.status !== 'in_progress') throw new GameError('You can only quit a game that is in progress.');
+    const player = this.requirePlayer(party, userId);
+    if (player.quit) throw new GameError('You already quit this game.');
+
+    this.forceQuit(party, userId);
+    return party;
+  },
+
+  /**
+   * Lets whoever created the party (the host) remove any other player —
+   * useful when someone stops responding. In setup, they're dropped
+   * entirely since no boards or history exist yet. Once the game is in
+   * progress, being kicked has exactly the same effect as quitting
+   * yourself: an immediate loss, dropped from the turn order, everyone
+   * else keeps playing. The host can never kick themselves.
+   */
+  kickPlayer(roomCode: string, requesterUserId: string, targetUserId: string): PartyState {
+    const party = this.requireParty(roomCode);
+    if (party.adminUserId !== requesterUserId) throw new GameError('Only the host can remove players.');
+    if (targetUserId === requesterUserId) throw new GameError('You cannot kick yourself.');
+    const player = this.requirePlayer(party, targetUserId);
+
+    if (party.status === 'setup') {
+      party.players.delete(targetUserId);
+      return party;
+    }
+
+    if (party.status === 'in_progress') {
+      if (player.quit) throw new GameError('That player already left the game.');
+      this.forceQuit(party, targetUserId);
+      return party;
+    }
+
+    throw new GameError('There is nobody to remove right now.');
+  },
+
+  /** Shared by a player quitting themselves and the host kicking someone out of a game in progress. */
+  forceQuit(party: PartyState, userId: string): void {
+    const player = this.requirePlayer(party, userId);
+    player.quit = true;
+
+    const quitIndex = party.turnOrder.indexOf(userId);
+    if (quitIndex !== -1) {
+      party.turnOrder.splice(quitIndex, 1);
+      if (party.turnOrder.length === 0) {
+        party.currentTurnIndex = 0;
+      } else if (quitIndex < party.currentTurnIndex) {
+        party.currentTurnIndex -= 1;
+      } else if (quitIndex === party.currentTurnIndex) {
+        party.currentTurnIndex = party.currentTurnIndex % party.turnOrder.length;
+      }
+    }
+
+    const opponents = [...party.players.values()].filter((p) => p.userId !== userId).map((p) => p.displayName);
+    userStore.recordGame(userId, {
+      roomCode: party.roomCode,
+      playedAt: new Date().toISOString(),
+      opponents,
+      won: false,
+    });
+
+    // If that leaves only one player still in the game, they win by
+    // default — nobody's left to keep playing against.
+    const remaining = [...party.players.values()].filter((p) => !p.quit);
+    if (remaining.length === 1) {
+      party.winnerUserId = remaining[0].userId;
+      party.status = 'finished';
+      this.recordGameHistory(party);
+    }
+  },
+
   /** Shared by a normal call and the disconnect-timeout auto-call. */
   resolveCall(party: PartyState, number: number): void {
     party.calledNumbers.push(number);
     for (const player of party.players.values()) {
       player.linesCompleted = countCompletedLines(player.layout, party.calledNumbers);
     }
-    const winner = [...party.players.values()].find((p) => hasWon(p.layout, party.calledNumbers));
+    const winner = [...party.players.values()].filter((p) => !p.quit).find((p) => hasWon(p.layout, party.calledNumbers));
     if (winner) {
       party.winnerUserId = winner.userId;
       party.status = 'finished';
@@ -130,12 +246,13 @@ export const gameEngine = {
     this.advanceTurn(party);
   },
 
-  /** Permanently appends this finished game to every participant's player file. */
+  /** Permanently appends this finished game to every remaining participant's player file — anyone who quit early already got their loss recorded at quit time. */
   recordGameHistory(party: PartyState): void {
-    const players = [...party.players.values()];
+    const allPlayers = [...party.players.values()];
+    const players = allPlayers.filter((p) => !p.quit);
     const playedAt = new Date().toISOString();
     for (const player of players) {
-      const opponents = players.filter((p) => p.userId !== player.userId).map((p) => p.displayName);
+      const opponents = allPlayers.filter((p) => p.userId !== player.userId).map((p) => p.displayName);
       userStore.recordGame(player.userId, {
         roomCode: party.roomCode,
         playedAt,
@@ -169,6 +286,7 @@ export const gameEngine = {
       ready: p.ready,
       connected: p.connected,
       linesCompleted: p.linesCompleted,
+      quit: p.quit,
     }));
     const you = party.players.get(forUserId);
     return {
@@ -222,5 +340,34 @@ export const gameEngine = {
       onResolved(currentParty);
     }, DISCONNECT_GRACE_MS);
     disconnectTimers.set(key, timer);
+  },
+
+  clearOwnerDisconnectTimer(roomCode: string): void {
+    const t = ownerDisconnectTimers.get(roomCode);
+    if (t) {
+      clearTimeout(t);
+      ownerDisconnectTimers.delete(roomCode);
+    }
+  },
+
+  /**
+   * The party only lives as long as its owner (admin) sticks around. Other
+   * players can come and go — including bailing out to the home screen —
+   * without the room disappearing. But if the admin disconnects and doesn't
+   * reconnect within the grace period, tear the whole party down so it
+   * doesn't linger in memory forever.
+   */
+  handleOwnerDisconnect(roomCode: string, onClosed: () => void): void {
+    this.clearOwnerDisconnectTimer(roomCode);
+    const timer = setTimeout(() => {
+      ownerDisconnectTimers.delete(roomCode);
+      const party = partyStore.get(roomCode);
+      if (!party) return;
+      const admin = party.players.get(party.adminUserId);
+      if (admin?.connected) return; // reconnected before the timer fired
+      partyStore.remove(roomCode);
+      onClosed();
+    }, DISCONNECT_GRACE_MS);
+    ownerDisconnectTimers.set(roomCode, timer);
   },
 };

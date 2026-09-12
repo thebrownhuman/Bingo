@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from './auth.service';
 import { serverUrl } from './server.config';
+import { Role } from './models';
 
 export interface GameRecord {
   roomCode: string;
@@ -14,7 +15,7 @@ export interface GameRecord {
 export interface PlayerProfile {
   username: string;
   displayName: string;
-  role: 'admin' | 'player';
+  role: Role;
   gamesPlayed: number;
   gamesWon: number;
   games: GameRecord[];

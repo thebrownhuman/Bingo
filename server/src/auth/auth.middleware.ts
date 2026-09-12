@@ -23,7 +23,7 @@ export function requireAuth(req: AuthedRequest, res: Response, next: NextFunctio
 
 export function requireAdmin(req: AuthedRequest, res: Response, next: NextFunction): void {
   requireAuth(req, res, () => {
-    if (req.user?.role !== 'admin') {
+    if (req.user?.role !== 'admin' && req.user?.role !== 'super_admin') {
       res.status(403).json({ error: { message: 'Only an admin can do that.' } });
       return;
     }

@@ -27,6 +27,17 @@ function broadcastState(io: Server, party: PartyState) {
   }
 }
 
+function socketsForUserInRoom(io: Server, room: string, userId: string): AuthedSocket[] {
+  const socketsInRoom = io.sockets.adapter.rooms.get(room);
+  if (!socketsInRoom) return [];
+  const matches: AuthedSocket[] = [];
+  for (const socketId of socketsInRoom) {
+    const socket = io.sockets.sockets.get(socketId) as AuthedSocket | undefined;
+    if (socket?.user?.userId === userId) matches.push(socket);
+  }
+  return matches;
+}
+
 export function registerSocketHandlers(io: Server) {
   io.use((socket: AuthedSocket, next) => {
     const token = socket.handshake.auth?.token as string | undefined;
@@ -65,8 +76,7 @@ export function registerSocketHandlers(io: Server) {
 
     socket.on('party:create', (payload: { maxPlayers?: number }, ack) => {
       try {
-        if (user.role !== 'admin') throw new GameError('Only an admin account can create a party.');
-        const party = gameEngine.createParty(user.userId, user.displayName, payload?.maxPlayers ?? MAX_PLAYERS);
+        const party = gameEngine.createParty(user.userId, user.displayName, user.role, payload?.maxPlayers ?? MAX_PLAYERS);
         socket.join(roomOf(party.roomCode));
         ack?.({ ok: true, roomCode: party.roomCode });
         broadcastState(io, party);
@@ -116,6 +126,16 @@ export function registerSocketHandlers(io: Server) {
       }
     });
 
+    socket.on('board:unready', (payload: { roomCode: string }, ack) => {
+      try {
+        const party = gameEngine.unsetReady(payload.roomCode, user.userId);
+        ack?.({ ok: true });
+        broadcastState(io, party);
+      } catch (err) {
+        ack?.({ ok: false, error: (err as Error).message });
+      }
+    });
+
     socket.on('game:start', (payload: { roomCode: string }, ack) => {
       try {
         const party = gameEngine.startGame(payload.roomCode, user.userId);
@@ -136,6 +156,46 @@ export function registerSocketHandlers(io: Server) {
       }
     });
 
+    socket.on('game:restart', (payload: { roomCode: string }, ack) => {
+      try {
+        const party = gameEngine.restartGame(payload.roomCode, user.userId);
+        ack?.({ ok: true });
+        broadcastState(io, party);
+      } catch (err) {
+        ack?.({ ok: false, error: (err as Error).message });
+      }
+    });
+
+    socket.on('game:quit', (payload: { roomCode: string }, ack) => {
+      try {
+        const party = gameEngine.quitGame(payload.roomCode, user.userId);
+        ack?.({ ok: true });
+        broadcastState(io, party);
+      } catch (err) {
+        ack?.({ ok: false, error: (err as Error).message });
+      }
+    });
+
+    socket.on('party:kick', (payload: { roomCode: string; targetUserId: string }, ack) => {
+      try {
+        const party = gameEngine.kickPlayer(payload.roomCode, user.userId, payload.targetUserId);
+        ack?.({ ok: true });
+        broadcastState(io, party);
+
+        // The kicked player might not be in party.players any more (setup
+        // kicks remove them outright), so they wouldn't get anything from
+        // broadcastState above — tell them directly and pull them out of
+        // the socket.io room so they stop receiving this room's traffic.
+        const room = roomOf(payload.roomCode);
+        for (const kickedSocket of socketsForUserInRoom(io, room, payload.targetUserId)) {
+          kickedSocket.emit('party:kicked');
+          kickedSocket.leave(room);
+        }
+      } catch (err) {
+        ack?.({ ok: false, error: (err as Error).message });
+      }
+    });
+
     socket.on('disconnect', () => {
       sessionRegistry.releaseIfCurrent(user.userId, socket.id);
       for (const room of socket.rooms) {
@@ -145,6 +205,12 @@ export function registerSocketHandlers(io: Server) {
         if (!party || !party.players.has(user.userId)) continue;
         gameEngine.handleDisconnect(roomCode, user.userId, (resolvedParty) => broadcastState(io, resolvedParty));
         broadcastState(io, party);
+
+        if (user.userId === party.adminUserId) {
+          gameEngine.handleOwnerDisconnect(roomCode, () => {
+            io.to(roomOf(roomCode)).emit('party:closed');
+          });
+        }
       }
     });
   });

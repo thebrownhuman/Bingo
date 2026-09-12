@@ -3,12 +3,13 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from './auth.service';
 import { serverUrl } from './server.config';
+import { Role } from './models';
 
 export interface ManagedUser {
   id: string;
   username: string;
   displayName: string;
-  role: 'admin' | 'player';
+  role: Role;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -40,6 +41,16 @@ export class AdminService {
   async deletePlayer(userId: string): Promise<void> {
     await firstValueFrom(
       this.http.post(`${serverUrl()}/api/admin/users/delete`, { userId }, { headers: this.authHeaders() })
+    );
+  }
+
+  async changePlayerPassword(userId: string, newPassword: string): Promise<void> {
+    await firstValueFrom(
+      this.http.post(
+        `${serverUrl()}/api/admin/users/password`,
+        { userId, newPassword },
+        { headers: this.authHeaders() }
+      )
     );
   }
 }

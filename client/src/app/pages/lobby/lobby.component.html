@@ -6,30 +6,46 @@
       style="display: flex; align-items: center; gap: 12px; background: none; border: none; padding: 0; cursor: pointer; text-align: left;"
       [attr.aria-label]="'View your profile'"
     >
-      <kendo-avatar shape="circle" [border]="true" style="background: var(--primary); color: var(--on-primary); font-weight: 700;">
+      <kendo-avatar
+        shape="circle"
+        [border]="true"
+        style="background: var(--primary); color: var(--on-primary); font-weight: 700; display: flex; align-items: center; justify-content: center;"
+      >
         {{ initials }}
       </kendo-avatar>
-      <div>
-        <div class="headline-md">Hey, {{ auth.user?.displayName }}</div>
-        <kendo-chip [label]="auth.user?.role ?? ''" [themeColor]="auth.user?.role === 'admin' ? 'info' : 'base'" [rounded]="'full'" size="small"></kendo-chip>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <div class="headline-md">{{ auth.user?.displayName }}</div>
+        <kendo-chip [label]="auth.user?.role ?? ''" [themeColor]="auth.user?.role !== 'player' ? 'info' : 'base'" [rounded]="'full'" size="small"></kendo-chip>
       </div>
     </button>
     <button kendoButton [fillMode]="'outline'" (click)="logout()">Sign out</button>
   </div>
 
-  @if (auth.user?.role === 'admin') {
+  @if (socket.state()?.roomCode) {
+  <kendo-card [width]="'100%'">
+    <kendo-card-body style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+      <div>
+        <div class="headline-md">You're still in a party</div>
+        <p style="color: var(--on-surface-variant); font-size: 13px; margin: 2px 0 0;">
+          Room {{ socket.state()?.roomCode }}
+        </p>
+      </div>
+      <button kendoButton themeColor="primary" [rounded]="'large'" (click)="backToParty()">Back to party</button>
+    </kendo-card-body>
+  </kendo-card>
+  }
+
   <kendo-card [width]="'100%'">
     <kendo-card-body style="display: flex; flex-direction: column; gap: 10px;">
       <div class="headline-md">Create a party</div>
       <p style="color: var(--on-surface-variant); font-size: 14px; margin: 0;">
-        You'll get a room code to share with 2-6 other players.
+        You'll get a room code to share with 2-6 friends. You'll be the host of your party.
       </p>
       <button kendoButton themeColor="primary" [rounded]="'large'" size="large" [disabled]="busy()" (click)="createParty()">
         Create party
       </button>
     </kendo-card-body>
   </kendo-card>
-  }
 
   <kendo-card [width]="'100%'">
     <kendo-card-body style="display: flex; flex-direction: column; gap: 10px;">
@@ -49,7 +65,7 @@
     </kendo-card-body>
   </kendo-card>
 
-  @if (auth.user?.role === 'admin') {
+  @if (isAdminTier) {
   <kendo-card [width]="'100%'">
     <kendo-card-body style="display: flex; flex-direction: column; gap: 12px;">
       <div>
@@ -60,24 +76,64 @@
       </div>
 
       @for (u of managedUsers(); track u.id) {
-      <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--outline-variant);">
-        <div>
-          <div style="font-weight: 600;">{{ u.displayName }}</div>
-          <div style="font-size: 12px; color: var(--on-surface-variant);">{{ u.username }}</div>
+      <div style="display: flex; flex-direction: column; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--outline-variant);">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+          <div>
+            <div style="font-weight: 600;">{{ u.displayName }}</div>
+            <div style="font-size: 12px; color: var(--on-surface-variant);">{{ u.username }}</div>
+          </div>
+          @if (u.role !== 'player') {
+          <kendo-chip [label]="u.role" size="small" [rounded]="'full'" [themeColor]="'info'" [fillMode]="'outline'"></kendo-chip>
+          } @else {
+          <div style="display: flex; gap: 6px;">
+            <button
+              kendoButton
+              [fillMode]="'flat'"
+              size="small"
+              [disabled]="managePlayersBusy()"
+              (click)="openPasswordReset(u.id)"
+            >
+              Change password
+            </button>
+            <button
+              kendoButton
+              [fillMode]="'flat'"
+              themeColor="error"
+              size="small"
+              [disabled]="managePlayersBusy()"
+              (click)="removePlayer(u.id)"
+            >
+              Delete
+            </button>
+          </div>
+          }
         </div>
-        @if (u.role === 'admin') {
-        <kendo-chip label="admin" size="small" [rounded]="'full'" [themeColor]="'info'" [fillMode]="'outline'"></kendo-chip>
-        } @else {
-        <button
-          kendoButton
-          [fillMode]="'flat'"
-          themeColor="error"
-          size="small"
-          [disabled]="managePlayersBusy()"
-          (click)="removePlayer(u.id)"
-        >
-          Delete
-        </button>
+
+        @if (passwordResetUserId() === u.id) {
+        <div style="display: flex; flex-direction: column; gap: 6px; background: var(--surface-container-low); border-radius: 10px; padding: 10px;">
+          <kendo-textbox
+            [(ngModel)]="passwordResetValue"
+            type="password"
+            placeholder="New password (min 6 characters)"
+          ></kendo-textbox>
+          @if (passwordResetError()) {
+          <p class="error-text" style="margin: 0;">{{ passwordResetError() }}</p>
+          }
+          <div style="display: flex; gap: 8px;">
+            <button
+              kendoButton
+              themeColor="primary"
+              [fillMode]="'outline'"
+              size="small"
+              style="flex: 1;"
+              [disabled]="passwordResetBusy()"
+              (click)="submitPasswordReset(u.id)"
+            >
+              Save
+            </button>
+            <button kendoButton [fillMode]="'flat'" size="small" style="flex: 1;" (click)="cancelPasswordReset()">Cancel</button>
+          </div>
+        </div>
         }
       </div>
       }
@@ -143,6 +199,28 @@
           </div>
           }
         </div>
+      </div>
+
+      <div style="border-top: 1px solid var(--outline-variant); padding-top: 14px; display: flex; flex-direction: column; gap: 8px;">
+        <p class="label-sm" style="margin: 0;">Change password</p>
+        <kendo-textbox [(ngModel)]="changePasswordCurrent" type="password" placeholder="Current password"></kendo-textbox>
+        <kendo-textbox [(ngModel)]="changePasswordNew" type="password" placeholder="New password (min 6 characters)"></kendo-textbox>
+        <kendo-textbox [(ngModel)]="changePasswordConfirm" type="password" placeholder="Confirm new password"></kendo-textbox>
+        @if (changePasswordError()) {
+        <p class="error-text" style="margin: 0;">{{ changePasswordError() }}</p>
+        }
+        @if (changePasswordSuccess()) {
+        <p style="color: var(--secondary); font-size: 13px; margin: 0;">Password updated.</p>
+        }
+        <button
+          kendoButton
+          themeColor="primary"
+          [fillMode]="'outline'"
+          [disabled]="changePasswordBusy()"
+          (click)="changeMyPassword()"
+        >
+          Update password
+        </button>
       </div>
 
       <button kendoButton [fillMode]="'outline'" (click)="closeProfile()">Close</button>

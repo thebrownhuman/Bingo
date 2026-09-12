@@ -33,9 +33,21 @@ export class LobbyComponent implements OnInit {
   profile = signal<PlayerProfile | null>(null);
   profileLoading = signal(false);
 
+  changePasswordCurrent = '';
+  changePasswordNew = '';
+  changePasswordConfirm = '';
+  changePasswordError = signal<string | null>(null);
+  changePasswordSuccess = signal(false);
+  changePasswordBusy = signal(false);
+
+  passwordResetUserId = signal<string | null>(null);
+  passwordResetValue = '';
+  passwordResetError = signal<string | null>(null);
+  passwordResetBusy = signal(false);
+
   constructor(
     public auth: AuthService,
-    private socket: SocketService,
+    public socket: SocketService,
     private router: Router,
     private admin: AdminService,
     private playerProfile: PlayerProfileService
@@ -43,9 +55,14 @@ export class LobbyComponent implements OnInit {
 
   ngOnInit(): void {
     this.socket.connect();
-    if (this.auth.user?.role === 'admin') {
+    if (this.isAdminTier) {
       this.refreshUsers();
     }
+  }
+
+  /** 'admin' and 'super_admin' both get party-hosting and player-management access. */
+  get isAdminTier(): boolean {
+    return this.auth.user?.role === 'admin' || this.auth.user?.role === 'super_admin';
   }
 
   get initials(): string {
@@ -87,6 +104,13 @@ export class LobbyComponent implements OnInit {
     this.router.navigate(['/room', code]);
   }
 
+  /** Jumps back into the party this session already joined, without re-entering a room code. */
+  backToParty(): void {
+    const roomCode = this.socket.state()?.roomCode;
+    if (!roomCode) return;
+    this.router.navigate(['/room', roomCode]);
+  }
+
   logout(): void {
     this.socket.disconnect();
     this.auth.logout();
@@ -107,6 +131,42 @@ export class LobbyComponent implements OnInit {
 
   closeProfile(): void {
     this.profile.set(null);
+    this.changePasswordCurrent = '';
+    this.changePasswordNew = '';
+    this.changePasswordConfirm = '';
+    this.changePasswordError.set(null);
+    this.changePasswordSuccess.set(false);
+  }
+
+  async changeMyPassword(): Promise<void> {
+    this.changePasswordError.set(null);
+    this.changePasswordSuccess.set(false);
+    if (!this.changePasswordCurrent || !this.changePasswordNew) {
+      this.changePasswordError.set('Enter your current and new password.');
+      return;
+    }
+    if (this.changePasswordNew.length < 6) {
+      this.changePasswordError.set('New password must be at least 6 characters.');
+      return;
+    }
+    if (this.changePasswordNew !== this.changePasswordConfirm) {
+      this.changePasswordError.set('New passwords do not match.');
+      return;
+    }
+    this.changePasswordBusy.set(true);
+    try {
+      await this.auth.changePassword(this.changePasswordCurrent, this.changePasswordNew);
+      this.changePasswordSuccess.set(true);
+      this.changePasswordCurrent = '';
+      this.changePasswordNew = '';
+      this.changePasswordConfirm = '';
+    } catch (err) {
+      const message =
+        (err as { error?: { error?: { message?: string } } })?.error?.error?.message ?? 'Could not change password.';
+      this.changePasswordError.set(message);
+    } finally {
+      this.changePasswordBusy.set(false);
+    }
   }
 
   private async refreshUsers(): Promise<void> {
@@ -151,6 +211,37 @@ export class LobbyComponent implements OnInit {
       this.managePlayersError.set(message);
     } finally {
       this.managePlayersBusy.set(false);
+    }
+  }
+
+  openPasswordReset(userId: string): void {
+    this.passwordResetUserId.set(userId);
+    this.passwordResetValue = '';
+    this.passwordResetError.set(null);
+  }
+
+  cancelPasswordReset(): void {
+    this.passwordResetUserId.set(null);
+    this.passwordResetValue = '';
+    this.passwordResetError.set(null);
+  }
+
+  async submitPasswordReset(userId: string): Promise<void> {
+    if (this.passwordResetValue.length < 6) {
+      this.passwordResetError.set('Password must be at least 6 characters.');
+      return;
+    }
+    this.passwordResetBusy.set(true);
+    this.passwordResetError.set(null);
+    try {
+      await this.admin.changePlayerPassword(userId, this.passwordResetValue);
+      this.cancelPasswordReset();
+    } catch (err) {
+      const message =
+        (err as { error?: { error?: { message?: string } } })?.error?.error?.message ?? 'Could not change password.';
+      this.passwordResetError.set(message);
+    } finally {
+      this.passwordResetBusy.set(false);
     }
   }
 }

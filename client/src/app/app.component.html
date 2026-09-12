@@ -1,3 +1,4 @@
+@if (isLobbyRoute()) {
 <button
   kendoButton
   [fillMode]="'outline'"
@@ -19,6 +20,7 @@
   </svg>
   }
 </button>
+}
 <router-outlet></router-outlet>
 
 @if (socket.sessionConflict()) {
@@ -44,7 +46,31 @@
     <p style="font-size: 14px; color: var(--on-surface-variant); margin: 0;">
       Your account was signed in on another device, so this session was signed out.
     </p>
-    <button kendoButton themeColor="primary" (click)="acknowledgeKicked()">OK</button>
+    <button kendoButton themeColor="primary" (click)="acknowledgeSessionKicked()">OK</button>
+  </div>
+</kendo-dialog>
+}
+
+@if (socket.partyClosed()) {
+<kendo-dialog [width]="340">
+  <div style="display: flex; flex-direction: column; gap: 14px; padding: 4px 0; text-align: center;">
+    <div class="headline-md">Party closed</div>
+    <p style="font-size: 14px; color: var(--on-surface-variant); margin: 0;">
+      The party host disconnected, so this room has been closed.
+    </p>
+    <button kendoButton themeColor="primary" (click)="acknowledgePartyClosed()">OK</button>
+  </div>
+</kendo-dialog>
+}
+
+@if (socket.kicked()) {
+<kendo-dialog [width]="340">
+  <div style="display: flex; flex-direction: column; gap: 14px; padding: 4px 0; text-align: center;">
+    <div class="headline-md">Removed from party</div>
+    <p style="font-size: 14px; color: var(--on-surface-variant); margin: 0;">
+      The host removed you from this party.
+    </p>
+    <button kendoButton themeColor="primary" (click)="acknowledgeKickedFromParty()">OK</button>
   </div>
 </kendo-dialog>
 }

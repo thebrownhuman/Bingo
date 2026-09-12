@@ -1,4 +1,9 @@
-export type Role = 'admin' | 'player';
+/**
+ * 'admin' can create/host parties and manage player accounts.
+ * 'super_admin' can do everything 'admin' can, plus sees the in-game admin
+ * view even when just playing in someone else's room, not just when hosting.
+ */
+export type Role = 'super_admin' | 'admin' | 'player';
 
 export interface GameRecord {
   roomCode: string;
@@ -30,6 +35,8 @@ export interface PlayerState {
   /** epoch ms when this player disconnected, used for the 30s grace timer */
   disconnectedAt: number | null;
   linesCompleted: number;
+  /** Left the game early, by their own choice — counts as a loss and takes them out of the turn order. */
+  quit: boolean;
 }
 
 export interface PartyState {
@@ -53,6 +60,7 @@ export interface PublicPlayer {
   ready: boolean;
   connected: boolean;
   linesCompleted: number;
+  quit: boolean;
 }
 
 export interface PublicPartyState {

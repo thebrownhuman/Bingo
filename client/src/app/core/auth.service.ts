@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { AuthUser } from './models';
 import { serverUrl } from './server.config';
@@ -42,6 +42,18 @@ export class AuthService {
   logout(): void {
     this.current.set(null);
     localStorage.removeItem(STORAGE_KEY);
+  }
+
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    const headers = new HttpHeaders({ Authorization: `Bearer ${this.token}` });
+    await firstValueFrom(
+      this.http.post(`${serverUrl()}/api/auth/change-password`, { currentPassword, newPassword }, { headers })
+    );
+    // Keep "remember me" auto-login working after the password changes.
+    const remembered = this.getRememberedCredentials();
+    if (remembered && remembered.username === this.user?.username) {
+      this.rememberCredentials(remembered.username, newPassword);
+    }
   }
 
   rememberCredentials(username: string, password: string): void {

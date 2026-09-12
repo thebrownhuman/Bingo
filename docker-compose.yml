@@ -1,0 +1,23 @@
+services:
+  server:
+    build: ./server
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      JWT_SECRET: ${JWT_SECRET:?set a strong JWT_SECRET in a .env file next to this compose file}
+    volumes:
+      - bingo-data:/app/data
+    # No host port published — only reachable from the `client` container's
+    # nginx (see client/nginx.conf), which proxies /bingo/api and
+    # /bingo/socket.io to it over the compose network.
+
+  client:
+    build: ./client
+    restart: unless-stopped
+    ports:
+      - "4011:80"
+    depends_on:
+      - server
+
+volumes:
+  bingo-data:

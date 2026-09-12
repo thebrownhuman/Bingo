@@ -41,6 +41,30 @@ adminRouter.post('/users', requireAdmin, (req, res) => {
   res.json({ user: toPublicUser(user) });
 });
 
+adminRouter.post('/users/password', requireAdmin, (req: AuthedRequest, res) => {
+  const { userId, newPassword } = req.body ?? {};
+  if (!userId || !newPassword) {
+    res.status(400).json({ error: { message: 'Missing userId or newPassword.' } });
+    return;
+  }
+  if (String(newPassword).length < 6) {
+    res.status(400).json({ error: { message: 'Password must be at least 6 characters.' } });
+    return;
+  }
+  const target = userStore.byId(userId);
+  if (!target) {
+    res.status(404).json({ error: { message: 'That account no longer exists.' } });
+    return;
+  }
+  if (target.role === 'admin' || target.role === 'super_admin') {
+    res.status(403).json({ error: { message: 'Admin passwords cannot be changed here.' } });
+    return;
+  }
+  target.passwordHash = bcrypt.hashSync(String(newPassword), 10);
+  userStore.upsert(target);
+  res.json({ ok: true });
+});
+
 adminRouter.post('/users/delete', requireAdmin, (req: AuthedRequest, res) => {
   const { userId } = req.body ?? {};
   if (!userId) {
@@ -52,7 +76,7 @@ adminRouter.post('/users/delete', requireAdmin, (req: AuthedRequest, res) => {
     res.status(404).json({ error: { message: 'That account no longer exists.' } });
     return;
   }
-  if (target.role === 'admin') {
+  if (target.role === 'admin' || target.role === 'super_admin') {
     res.status(403).json({ error: { message: 'Admin accounts cannot be deleted here.' } });
     return;
   }
