@@ -40,8 +40,6 @@ export class GameRoomComponent implements OnInit {
   state = this.socket.state;
   /** Whoever created this specific room — controls starting the game and restarting after it ends. */
   isHost = computed(() => this.auth.user?.userId === this.state()?.adminUserId);
-  /** Sees the admin view panel regardless of whether they're hosting this particular room. */
-  isSuperAdmin = computed(() => this.auth.user?.role === 'super_admin');
   me = computed(() => this.state()?.players.find((p) => p.userId === this.auth.user?.userId));
   isMyTurn = computed(() => this.state()?.currentTurnUserId === this.auth.user?.userId);
   currentTurnPlayer = computed(() => this.state()?.players.find((p) => p.userId === this.state()?.currentTurnUserId));

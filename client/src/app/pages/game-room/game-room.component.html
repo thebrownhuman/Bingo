@@ -300,43 +300,6 @@
       </div>
     </kendo-card-body>
   </kendo-card>
-
-  @if (isSuperAdmin() || isHost()) {
-  <kendo-card [width]="'100%'">
-    <kendo-card-body style="display: flex; flex-direction: column; gap: 6px;">
-      <p class="label-sm">Admin view — turn order &amp; progress</p>
-      @for (p of state()!.players; track p.userId) {
-      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 0;">
-        <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
-          <kendo-avatar shape="circle" size="small" style="font-size: 11px; font-weight: 700; flex-shrink: 0;">{{ initialsOf(p.displayName) }}</kendo-avatar>
-          <span style="font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ p.displayName }}</span>
-          @if (p.userId === state()!.currentTurnUserId) {
-          <kendo-chip label="turn" size="small" [rounded]="'full'" [themeColor]="'info'"></kendo-chip>
-          }
-          @if (p.quit) {
-          <kendo-chip label="left" size="small" [rounded]="'full'"></kendo-chip>
-          }
-        </div>
-        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-          <span class="label-sm">{{ p.linesCompleted }}/5 lines</span>
-          @if (isHost() && !p.quit && p.userId !== auth.user?.userId) {
-          <button
-            kendoButton
-            [fillMode]="'flat'"
-            themeColor="error"
-            size="small"
-            [attr.aria-label]="'Kick ' + p.displayName"
-            (click)="openKickConfirm(p.userId, p.displayName)"
-          >
-            Kick
-          </button>
-          }
-        </div>
-      </div>
-      }
-    </kendo-card-body>
-  </kendo-card>
-  }
   }
 
   <!-- FINISHED -->
